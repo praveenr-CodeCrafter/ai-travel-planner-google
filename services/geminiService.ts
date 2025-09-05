@@ -7,20 +7,6 @@ if (!process.env.API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const suggestCountry = async (location: string): Promise<string> => {
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: `What country is "${location}" in? Respond with only the country name.`,
-             config: { thinkingConfig: { thinkingBudget: 0 } }
-        });
-        return response.text.trim();
-    } catch (error) {
-        console.error("Error suggesting country:", error);
-        return "";
-    }
-}
-
 export const generateItinerary = async (preferences: TravelPreferences): Promise<Itinerary> => {
     const { destination, budget, currency, startDate, endDate, interests } = preferences;
 

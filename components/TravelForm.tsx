@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { TravelPreferences } from '../types';
-import { INTERESTS_OPTIONS, CURRENCY_OPTIONS } from '../types';
-import { suggestCountry } from '../services/geminiService';
+import { INTERESTS_OPTIONS, CURRENCY_OPTIONS, COUNTRIES } from '../types';
 
 interface TravelFormProps {
     onGenerate: (preferences: TravelPreferences) => void;
@@ -19,32 +18,43 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
         interests: ['Sightseeing'],
     });
     const [error, setError] = useState<string | null>(null);
-    const [countrySuggestion, setCountrySuggestion] = useState<string | null>(null);
-    const [isSuggesting, setIsSuggesting] = useState(false);
+    const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const destinationRef = useRef<HTMLDivElement>(null);
 
-    // Debounced effect for country suggestion
     useEffect(() => {
-        setCountrySuggestion(null);
-        if (preferences.destination.trim().split(/\s+/).length < 2) {
-            return;
-        }
-
-        const handler = setTimeout(async () => {
-            setIsSuggesting(true);
-            try {
-                const country = await suggestCountry(preferences.destination);
-                if (country && !preferences.destination.toLowerCase().includes(country.toLowerCase())) {
-                    setCountrySuggestion(country);
-                }
-            } catch (e) {
-                console.error("Failed to suggest country", e);
-            } finally {
-                setIsSuggesting(false);
+        const handleClickOutside = (event: MouseEvent) => {
+            if (destinationRef.current && !destinationRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
             }
-        }, 1000); // 1s debounce
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
-        return () => clearTimeout(handler);
-    }, [preferences.destination]);
+    const handleDestinationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setPreferences({ ...preferences, destination: value });
+
+        if (value.length >= 3) {
+            const filtered = COUNTRIES.filter(country =>
+                country.toLowerCase().startsWith(value.toLowerCase())
+            );
+            setDestinationSuggestions(filtered);
+            setShowSuggestions(filtered.length > 0);
+        } else {
+            setDestinationSuggestions([]);
+            setShowSuggestions(false);
+        }
+    };
+    
+    const handleSuggestionClick = (suggestion: string) => {
+        setPreferences(prev => ({ ...prev, destination: suggestion }));
+        setShowSuggestions(false);
+        setDestinationSuggestions([]);
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setPreferences({ ...preferences, [e.target.name]: e.target.value });
@@ -56,16 +66,10 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
             : [...preferences.interests, interest];
         setPreferences({ ...preferences, interests: newInterests });
     };
-    
-    const applySuggestion = () => {
-        if(countrySuggestion) {
-            setPreferences(prev => ({...prev, destination: `${prev.destination}, ${countrySuggestion}`}));
-            setCountrySuggestion(null);
-        }
-    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setShowSuggestions(false);
         if (!preferences.destination.trim()) {
             setError("Please enter a destination.");
             return;
@@ -88,16 +92,23 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Destination and Budget */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    <div className="relative" ref={destinationRef}>
                         <label htmlFor="destination" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Destination</label>
-                        <input type="text" name="destination" id="destination" value={preferences.destination} onChange={handleChange}
+                        <input type="text" name="destination" id="destination" value={preferences.destination} onChange={handleDestinationChange} autoComplete="off"
                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white"
-                               placeholder="e.g., Eiffel Tower, Paris" />
-                        {isSuggesting && <p className="text-xs text-gray-500 mt-1">Checking for country...</p>}
-                        {countrySuggestion && (
-                            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                Did you mean: <button type="button" onClick={applySuggestion} className="font-semibold text-green-600 hover:underline">{preferences.destination}, {countrySuggestion}</button>?
-                            </div>
+                               placeholder="e.g., Paris, France" />
+                        {showSuggestions && destinationSuggestions.length > 0 && (
+                            <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
+                                {destinationSuggestions.map((suggestion) => (
+                                    <li
+                                        key={suggestion}
+                                        className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-green-100 dark:hover:bg-gray-700"
+                                        onMouseDown={() => handleSuggestionClick(suggestion)}
+                                    >
+                                        {suggestion}
+                                    </li>
+                                ))}
+                            </ul>
                         )}
                     </div>
                     <div>
