@@ -36,18 +36,18 @@ const ItineraryDayCard: React.FC<{ plan: DailyPlan; destination: string; }> = ({
                 <GeneratedImage attractionName={keyAttraction} destination={destination} />
             </div>
             <div className="p-6">
-                <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-green-500 uppercase tracking-wider">Day {plan.day}</p>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{plan.theme}</h3>
+                <div className="flex items-center justify-between mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="font-bold text-green-600 dark:text-green-400 uppercase tracking-wide">Day {plan.day}</p>
+                    <div className="flex items-center gap-2">
                         <WeatherIcon />
-                        <span>{plan.weather.temperature}</span>
+                        <span>{plan.weather.forecast} &bull; {plan.weather.temperature}</span>
                     </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white mt-1">{plan.theme}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{plan.weather.forecast}</p>
+                <hr className="my-4 border-gray-200 dark:border-gray-700" />
 
-                <div className="mt-4">
+                <div>
                     <h4 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">Activities</h4>
                     <ul className="space-y-3">
                         {plan.activities.map((activity, index) => (

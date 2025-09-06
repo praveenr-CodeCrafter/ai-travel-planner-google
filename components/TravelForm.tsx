@@ -7,6 +7,13 @@ interface TravelFormProps {
     isLoading: boolean;
 }
 
+const CheckIcon: React.FC = () => (
+    <svg className="h-4 w-4 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+);
+
+
 const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
     const today = new Date().toISOString().split('T')[0];
     const [preferences, setPreferences] = useState<TravelPreferences>({
@@ -21,6 +28,9 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
     const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const destinationRef = useRef<HTMLDivElement>(null);
+
+    const [isOtherInterestSelected, setIsOtherInterestSelected] = useState(false);
+    const [otherInterest, setOtherInterest] = useState('');
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -67,6 +77,37 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
         setPreferences({ ...preferences, interests: newInterests });
     };
 
+    const handleOtherInterestClick = () => {
+        const nextState = !isOtherInterestSelected;
+        setIsOtherInterestSelected(nextState);
+
+        // If we are deselecting 'Other'
+        if (!nextState) {
+            // Remove the custom interest from the list
+            setPreferences(prev => ({
+                ...prev,
+                interests: prev.interests.filter(i => i !== otherInterest)
+            }));
+            setOtherInterest(''); // Clear the input value
+        }
+    };
+
+    const handleOtherInterestChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newCustomValue = e.target.value;
+        const oldCustomValue = otherInterest; // Capture old value before state update
+
+        setPreferences(prev => {
+            const interestsWithoutOld = prev.interests.filter(i => i !== oldCustomValue);
+            const newInterests = newCustomValue.trim()
+                ? [...interestsWithoutOld, newCustomValue.trim()]
+                : interestsWithoutOld;
+            return { ...prev, interests: newInterests };
+        });
+        
+        setOtherInterest(newCustomValue); // Update the state for the input field
+    };
+
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setShowSuggestions(false);
@@ -78,12 +119,14 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
             setError("End date cannot be before start date.");
             return;
         }
-        if (preferences.interests.length === 0) {
+        
+        const finalInterests = preferences.interests.filter(i => i.trim() !== '');
+        if (finalInterests.length === 0) {
             setError("Please select at least one interest.");
             return;
         }
         setError(null);
-        onGenerate(preferences);
+        onGenerate({...preferences, interests: finalInterests});
     };
 
     return (
@@ -142,17 +185,44 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Interests</label>
                     <div className="flex flex-wrap gap-3">
-                        {INTERESTS_OPTIONS.map((interest) => (
-                            <button key={interest} type="button" onClick={() => handleInterestChange(interest)}
-                                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                                        preferences.interests.includes(interest)
-                                            ? 'bg-green-500 text-white shadow'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-gray-600'
-                                    }`}>
-                                {interest}
-                            </button>
-                        ))}
+                        {INTERESTS_OPTIONS.map((interest) => {
+                             const isSelected = preferences.interests.includes(interest);
+                             return (
+                                <button key={interest} type="button" onClick={() => handleInterestChange(interest)}
+                                        className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
+                                            isSelected
+                                                ? 'bg-green-500 text-white shadow'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-gray-600'
+                                        }`}>
+                                    {isSelected && <CheckIcon />}
+                                    {interest}
+                                </button>
+                             );
+                        })}
+                        <button type="button" onClick={handleOtherInterestClick}
+                                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
+                                    isOtherInterestSelected
+                                        ? 'bg-green-500 text-white shadow'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-gray-600'
+                                }`}>
+                            {isOtherInterestSelected && <CheckIcon />}
+                            Other
+                        </button>
                     </div>
+                     {isOtherInterestSelected && (
+                        <div className="mt-4">
+                            <label htmlFor="otherInterest" className="sr-only">Other interest</label>
+                            <input
+                                id="otherInterest"
+                                type="text"
+                                value={otherInterest}
+                                onChange={handleOtherInterestChange}
+                                className="w-full md:w-2/3 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white"
+                                placeholder="Type your custom interest..."
+                                aria-label="Custom interest input"
+                            />
+                        </div>
+                    )}
                 </div>
                 
                 {error && <p className="text-red-500 text-sm">{error}</p>}
