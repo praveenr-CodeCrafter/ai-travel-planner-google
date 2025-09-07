@@ -27,12 +27,15 @@ const TipsIcon = () => (
 );
 
 
-const ItineraryDayCard: React.FC<{ plan: DailyPlan; destination: string; }> = ({ plan, destination }) => {
+const ItineraryDayCard: React.FC<{ plan: DailyPlan; destination: string; index: number; }> = ({ plan, destination, index }) => {
     const keyAttraction = plan.activities.length > 0 ? plan.activities[0].attractionName : "scenic view";
 
     return (
-        <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
-            <div className="h-56 w-full">
+        <div 
+            className="group bg-white dark:bg-gray-800/50 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] opacity-0 animate-fade-in"
+            style={{ animationDelay: `${index * 150}ms` }}
+        >
+            <div className="h-56 w-full overflow-hidden">
                 <GeneratedImage attractionName={keyAttraction} destination={destination} />
             </div>
             <div className="p-6">
@@ -85,8 +88,8 @@ const ItineraryDisplay: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => 
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {itinerary.dailyPlans.sort((a,b) => a.day - b.day).map(plan => (
-                    <ItineraryDayCard key={plan.day} plan={plan} destination={itinerary.destination} />
+                {itinerary.dailyPlans.sort((a,b) => a.day - b.day).map((plan, index) => (
+                    <ItineraryDayCard key={plan.day} plan={plan} destination={itinerary.destination} index={index} />
                 ))}
             </div>
             

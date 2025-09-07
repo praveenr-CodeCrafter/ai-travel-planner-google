@@ -48,7 +48,7 @@ const GeneratedImage: React.FC<GeneratedImageProps> = ({ attractionName, destina
         <img
             src={imageUrl ?? ''}
             alt={`AI generated image of ${attractionName}`}
-            className="w-full h-full object-cover rounded-lg transition-opacity duration-500 opacity-0"
+            className="w-full h-full object-cover transition-opacity duration-500 opacity-0 transition-transform duration-300 ease-in-out group-hover:scale-110"
             onLoad={(e) => (e.currentTarget.style.opacity = '1')}
         />
     );
