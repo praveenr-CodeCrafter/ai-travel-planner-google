@@ -7,10 +7,16 @@ export interface TravelPreferences {
   interests: string[];
 }
 
+export interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
 export interface Activity {
   time: string;
   description: string;
   attractionName: string;
+  coordinates: Coordinates;
 }
 
 export interface FoodRec {
@@ -35,6 +41,7 @@ export interface Itinerary {
   title: string;
   destination: string;
   duration: number;
+  coordinates: Coordinates;
   travelTips: string[];
   dailyPlans: DailyPlan[];
 }

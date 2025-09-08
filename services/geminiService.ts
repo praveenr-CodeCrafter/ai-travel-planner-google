@@ -20,6 +20,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
       - Interests: ${interests.join(", ")}
 
       Your response must be a JSON object that strictly follows this schema.
+      Include precise latitude and longitude coordinates for the main destination and for each individual attraction.
       For each day, provide:
       - A creative theme.
       - 2-3 specific activities with suggested times.
@@ -41,6 +42,15 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                         title: { type: Type.STRING, description: "A catchy title for the trip." },
                         destination: { type: Type.STRING },
                         duration: { type: Type.INTEGER },
+                        coordinates: {
+                            type: Type.OBJECT,
+                            description: "Latitude and Longitude for the destination city.",
+                            properties: {
+                                lat: { type: Type.NUMBER },
+                                lng: { type: Type.NUMBER }
+                            },
+                            required: ["lat", "lng"]
+                        },
                         travelTips: {
                             type: Type.ARRAY,
                             items: { type: Type.STRING },
@@ -70,9 +80,18 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                                             properties: {
                                                 time: { type: Type.STRING, description: "Suggested time (e.g., '9:00 AM')." },
                                                 description: { type: Type.STRING, description: "Description of the activity." },
-                                                attractionName: { type: Type.STRING, description: "Name of the key attraction for this activity." }
+                                                attractionName: { type: Type.STRING, description: "Name of the key attraction for this activity." },
+                                                coordinates: {
+                                                    type: Type.OBJECT,
+                                                    description: "Latitude and Longitude for the attraction.",
+                                                    properties: {
+                                                        lat: { type: Type.NUMBER },
+                                                        lng: { type: Type.NUMBER }
+                                                    },
+                                                    required: ["lat", "lng"]
+                                                }
                                             },
-                                            required: ["time", "description", "attractionName"]
+                                            required: ["time", "description", "attractionName", "coordinates"]
                                         }
                                     },
                                     foodToTry: {
@@ -89,7 +108,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                             }
                         }
                     },
-                    required: ["title", "destination", "duration", "travelTips", "dailyPlans"]
+                    required: ["title", "destination", "duration", "coordinates", "travelTips", "dailyPlans"]
                 }
             }
         });

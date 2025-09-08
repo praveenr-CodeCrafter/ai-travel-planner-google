@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Itinerary, DailyPlan } from '../types';
 import GeneratedImage from './GeneratedImage';
+import MapView from './MapView';
 
 const ActivityIcon = () => (
     <svg className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,6 +93,8 @@ const ItineraryDisplay: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => 
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white">{itinerary.title}</h1>
                 <p className="mt-2 text-xl text-gray-600 dark:text-gray-300">Your personalized {itinerary.duration}-day trip to {itinerary.destination}</p>
             </header>
+
+            {itinerary.coordinates && <MapView itinerary={itinerary} />}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {itinerary.dailyPlans.sort((a,b) => a.day - b.day).map((plan, index) => (
