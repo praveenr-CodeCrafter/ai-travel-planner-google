@@ -1,10 +1,16 @@
 import React from 'react';
-import type { Itinerary, DailyPlan } from '../types';
+import type { Itinerary, DailyPlan, Activity } from '../types';
 import GeneratedImage from './GeneratedImage';
 import MapView from './MapView';
 
+interface ItineraryDisplayProps {
+    itinerary: Itinerary;
+    selectedActivity: { activity: Activity, day: number } | null;
+    onActivitySelect: (activity: Activity | null, day?: number) => void;
+}
+
 const ActivityIcon = () => (
-    <svg className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
     </svg>
 );
@@ -33,9 +39,20 @@ const CheckCircleIcon = () => (
     </svg>
 );
 
+interface ItineraryDayCardProps {
+    plan: DailyPlan;
+    destination: string;
+    index: number;
+    selectedActivity: { activity: Activity, day: number } | null;
+    onActivitySelect: (activity: Activity | null, day?: number) => void;
+}
 
-const ItineraryDayCard: React.FC<{ plan: DailyPlan; destination: string; index: number; }> = ({ plan, destination, index }) => {
+const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, index, selectedActivity, onActivitySelect }) => {
     const keyAttraction = plan.activities.length > 0 ? plan.activities[0].attractionName : "scenic view";
+
+    const getActivityId = (day: number, attractionName: string) => {
+        return `activity-${day}-${attractionName.replace(/\s+/g, '-').toLowerCase()}`;
+    };
 
     return (
         <div 
@@ -60,16 +77,23 @@ const ItineraryDayCard: React.FC<{ plan: DailyPlan; destination: string; index: 
                 <div className="space-y-6">
                     <div>
                         <h4 className="font-semibold text-lg text-gray-700 dark:text-gray-200 mb-3">Activities</h4>
-                        <ul className="space-y-3">
-                            {plan.activities.map((activity, index) => (
-                                <li key={index} className="flex items-start">
+                        <ul className="space-y-2">
+                            {plan.activities.map((activity, activityIndex) => {
+                                const isSelected = selectedActivity?.day === plan.day && selectedActivity?.activity.attractionName === activity.attractionName;
+                                return (
+                                <li 
+                                    key={activityIndex} 
+                                    id={getActivityId(plan.day, activity.attractionName)}
+                                    className={`flex items-start activity-item ${isSelected ? 'selected' : ''}`}
+                                    onClick={() => onActivitySelect(isSelected ? null : activity, plan.day)}
+                                >
                                     <ActivityIcon />
                                     <div>
                                         <span className="font-semibold text-gray-600 dark:text-gray-300">{activity.time}: </span>
                                         <span className="text-gray-500 dark:text-gray-400">{activity.description}</span>
                                     </div>
                                 </li>
-                            ))}
+                            )})}
                         </ul>
                     </div>
                     <div className="flex items-start">
@@ -86,7 +110,7 @@ const ItineraryDayCard: React.FC<{ plan: DailyPlan; destination: string; index: 
     );
 };
 
-const ItineraryDisplay: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => {
+const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selectedActivity, onActivitySelect }) => {
     return (
         <div className="space-y-16 mt-12">
             <header className="text-center">
@@ -94,11 +118,11 @@ const ItineraryDisplay: React.FC<{ itinerary: Itinerary }> = ({ itinerary }) => 
                 <p className="mt-2 text-xl text-gray-600 dark:text-gray-300">Your personalized {itinerary.duration}-day trip to {itinerary.destination}</p>
             </header>
 
-            {itinerary.coordinates && <MapView itinerary={itinerary} />}
+            {itinerary.coordinates && <MapView itinerary={itinerary} selectedActivity={selectedActivity} onActivitySelect={onActivitySelect} />}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {itinerary.dailyPlans.sort((a,b) => a.day - b.day).map((plan, index) => (
-                    <ItineraryDayCard key={plan.day} plan={plan} destination={itinerary.destination} index={index} />
+                    <ItineraryDayCard key={plan.day} plan={plan} destination={itinerary.destination} index={index} selectedActivity={selectedActivity} onActivitySelect={onActivitySelect} />
                 ))}
             </div>
             

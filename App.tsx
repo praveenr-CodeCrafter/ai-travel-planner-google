@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import type { TravelPreferences, Itinerary } from './types';
+import React, { useState, useCallback, useEffect } from 'react';
+import type { TravelPreferences, Itinerary, Activity } from './types';
 import { generateItinerary } from './services/geminiService';
 import Header from './components/Header';
 import TravelForm from './components/TravelForm';
@@ -10,11 +10,37 @@ const App: React.FC = () => {
     const [itinerary, setItinerary] = useState<Itinerary | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [selectedActivity, setSelectedActivity] = useState<{ activity: Activity, day: number } | null>(null);
+
+    const getActivityId = (day: number, attractionName: string) => {
+        return `activity-${day}-${attractionName.replace(/\s+/g, '-').toLowerCase()}`;
+    };
+    
+    useEffect(() => {
+        if (selectedActivity) {
+            const { activity, day } = selectedActivity;
+            const elementId = getActivityId(day, activity.attractionName);
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }, [selectedActivity]);
+
+
+    const handleActivitySelect = (activity: Activity | null, day?: number) => {
+        if (activity && day !== undefined) {
+            setSelectedActivity({ activity, day });
+        } else {
+            setSelectedActivity(null);
+        }
+    };
 
     const handleGenerateItinerary = useCallback(async (preferences: TravelPreferences) => {
         setIsLoading(true);
         setError(null);
         setItinerary(null);
+        setSelectedActivity(null);
 
         try {
             const result = await generateItinerary(preferences);
@@ -50,7 +76,11 @@ const App: React.FC = () => {
 
                     {itinerary && !isLoading && (
                          <div className="mt-8">
-                            <ItineraryDisplay itinerary={itinerary} />
+                            <ItineraryDisplay 
+                                itinerary={itinerary} 
+                                selectedActivity={selectedActivity}
+                                onActivitySelect={handleActivitySelect}
+                            />
                         </div>
                     )}
                 </main>

@@ -1,63 +1,98 @@
 import React, { useEffect, useRef } from 'react';
-import type { Itinerary } from '../types';
+import type { Itinerary, Activity } from '../types';
 
-// Since Leaflet is loaded via a script tag, we need to declare it for TypeScript
 declare var L: any;
 
 interface MapViewProps {
     itinerary: Itinerary;
+    selectedActivity: { activity: Activity, day: number } | null;
+    onActivitySelect: (activity: Activity | null, day?: number) => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ itinerary }) => {
+const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivitySelect }) => {
     const mapContainerRef = useRef<HTMLDivElement>(null);
-    const mapRef = useRef<any>(null); // To hold the map instance
+    const mapRef = useRef<any>(null);
+    const markerRefs = useRef<Record<string, any>>({});
+
+    const getActivityId = (day: number, attractionName: string) => {
+        return `activity-${day}-${attractionName.replace(/\s+/g, '-').toLowerCase()}`;
+    };
 
     useEffect(() => {
         if (!mapContainerRef.current || !itinerary?.coordinates) {
             return;
         }
 
-        // Cleanup previous map instance if it exists
         if (mapRef.current) {
             mapRef.current.remove();
         }
 
-        // Initialize map
         const map = L.map(mapContainerRef.current).setView([itinerary.coordinates.lat, itinerary.coordinates.lng], 12);
         mapRef.current = map;
+        markerRefs.current = {};
 
-        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
         
         const markers: any[] = [];
 
-        // Add markers for each activity
         itinerary.dailyPlans.forEach(plan => {
             plan.activities.forEach(activity => {
                 if (activity.coordinates) {
                     const marker = L.marker([activity.coordinates.lat, activity.coordinates.lng])
                         .addTo(map)
                         .bindPopup(`<b>${activity.attractionName}</b><br>${activity.description}`);
+                    
+                    const activityId = getActivityId(plan.day, activity.attractionName);
+                    markerRefs.current[activityId] = marker;
+
+                    marker.on('click', () => {
+                        const isCurrentlySelected = selectedActivity?.day === plan.day && selectedActivity?.activity.attractionName === activity.attractionName;
+                        onActivitySelect(isCurrentlySelected ? null : activity, plan.day);
+                    });
+
                     markers.push(marker);
                 }
             });
         });
 
-        // Adjust map bounds to fit all markers
         if (markers.length > 0) {
             const group = L.featureGroup(markers);
             map.fitBounds(group.getBounds().pad(0.2));
         }
 
-        // Cleanup on component unmount
         return () => {
             map.remove();
             mapRef.current = null;
         };
 
-    }, [itinerary]); // Re-run effect when itinerary changes
+    }, [itinerary, onActivitySelect]); // Rerun only when the whole itinerary changes
+
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map) return;
+
+        if (selectedActivity) {
+            const { activity, day } = selectedActivity;
+            const activityId = getActivityId(day, activity.attractionName);
+            const marker = markerRefs.current[activityId];
+
+            if (marker) {
+                const latLng = marker.getLatLng();
+                map.flyTo(latLng, map.getZoom() < 14 ? 14 : map.getZoom(), {
+                    animate: true,
+                    duration: 1,
+                });
+                marker.openPopup();
+            }
+        } else {
+             // Optional: Close any open popups when selection is cleared
+             map.closePopup();
+        }
+
+    }, [selectedActivity]);
+
 
     return (
         <div 

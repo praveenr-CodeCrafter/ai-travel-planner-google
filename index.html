@@ -57,6 +57,23 @@
     .dark .leaflet-tile-pane {
         filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
     }
+    .activity-item.selected {
+        background-color: #ecfdf5; /* green-50 */
+        border-color: #10b981; /* green-500 */
+        transform: scale(1.02);
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+    .dark .activity-item.selected {
+        background-color: #1f2937; /* gray-800 */
+        border-color: #34d399; /* green-400 */
+    }
+    .activity-item {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+        border: 2px solid transparent;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        cursor: pointer;
+    }
 </style>
 </head>
   <body class="bg-green-50 dark:bg-gray-900">
