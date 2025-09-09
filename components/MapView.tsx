@@ -36,6 +36,7 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
         }).addTo(map);
         
         const markers: any[] = [];
+        let markerIndex = 0;
 
         itinerary.dailyPlans.forEach(plan => {
             plan.activities.forEach(activity => {
@@ -44,6 +45,13 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
                         .addTo(map)
                         .bindPopup(`<b>${activity.attractionName}</b><br>${activity.description}`);
                     
+                    const iconElement = marker.getElement();
+                    if (iconElement) {
+                        iconElement.classList.add('marker-animate-in');
+                        iconElement.style.animationDelay = `${markerIndex * 50}ms`;
+                        markerIndex++;
+                    }
+
                     const activityId = getActivityId(plan.day, activity.attractionName);
                     markerRefs.current[activityId] = marker;
 
@@ -73,6 +81,14 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
         const map = mapRef.current;
         if (!map) return;
 
+        // Reset pulse animation on all markers
+        Object.values(markerRefs.current).forEach(marker => {
+            const iconElement = marker.getElement();
+            if (iconElement) {
+                iconElement.classList.remove('marker-selected-pulse');
+            }
+        });
+
         if (selectedActivity) {
             const { activity, day } = selectedActivity;
             const activityId = getActivityId(day, activity.attractionName);
@@ -85,6 +101,12 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
                     duration: 1,
                 });
                 marker.openPopup();
+                
+                // Add pulse animation to selected marker's icon
+                const iconElement = marker.getElement();
+                if (iconElement) {
+                    iconElement.classList.add('marker-selected-pulse');
+                }
             }
         } else {
              // Optional: Close any open popups when selection is cleared
