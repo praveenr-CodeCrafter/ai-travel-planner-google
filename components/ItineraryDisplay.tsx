@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Itinerary, DailyPlan, Activity } from '../types';
 import GeneratedImage from './GeneratedImage';
 import MapView from './MapView';
@@ -36,6 +36,12 @@ const TipsIcon = () => (
 const CheckCircleIcon = () => (
     <svg className="h-6 w-6 text-green-500 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+const ShareIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
     </svg>
 );
 
@@ -111,11 +117,66 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
 };
 
 const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selectedActivity, onActivitySelect }) => {
+    const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
+
+    const handleShare = async () => {
+        let summary = `✈️ My Trip Itinerary: ${itinerary.title} ✈️\n\n`;
+        summary += `📍 Destination: ${itinerary.destination}\n`;
+        summary += `⏳ Duration: ${itinerary.duration} day(s)\n\n`;
+
+        itinerary.dailyPlans.sort((a, b) => a.day - b.day).forEach(plan => {
+            summary += `--- DAY ${plan.day}: ${plan.theme} ---\n`;
+            plan.activities.forEach(activity => {
+                summary += `  • ${activity.time}: ${activity.description} (${activity.attractionName})\n`;
+            });
+            summary += `  🍽️ Eat: ${plan.foodToTry.dishName} at ${plan.foodToTry.suggestedRestaurant}\n\n`;
+        });
+
+        summary += "💡 Travel Tips:\n";
+        itinerary.travelTips.forEach(tip => {
+            summary += `  - ${tip}\n`;
+        });
+
+        summary += "\nGenerated with AI Travel Planner!";
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: itinerary.title,
+                    text: summary,
+                    url: window.location.href,
+                });
+            } catch (error) {
+                console.error('Error sharing itinerary:', error);
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(summary);
+                setShareStatus('copied');
+                setTimeout(() => setShareStatus('idle'), 2500);
+            } catch (error) {
+                console.error('Failed to copy itinerary:', error);
+                alert('Failed to copy itinerary to clipboard.');
+            }
+        }
+    };
+
     return (
         <div className="space-y-16 mt-12">
             <header className="text-center">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white">{itinerary.title}</h1>
                 <p className="mt-2 text-xl text-gray-600 dark:text-gray-300">Your personalized {itinerary.duration}-day trip to {itinerary.destination}</p>
+                <div className="mt-6 flex justify-center">
+                    <button
+                        onClick={handleShare}
+                        className="px-5 py-2.5 bg-white dark:bg-gray-700/50 border border-green-500 text-green-500 font-semibold rounded-full hover:bg-green-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
+                        aria-label="Share itinerary"
+                        disabled={shareStatus === 'copied'}
+                    >
+                        <ShareIcon />
+                        <span>{shareStatus === 'copied' ? 'Copied to Clipboard!' : 'Share Itinerary'}</span>
+                    </button>
+                </div>
             </header>
 
             {itinerary.coordinates && <MapView itinerary={itinerary} selectedActivity={selectedActivity} onActivitySelect={onActivitySelect} />}
