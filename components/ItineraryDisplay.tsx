@@ -139,25 +139,42 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
 
         summary += "\nGenerated with AI Travel Planner!";
 
+        const copyToClipboard = async () => {
+            if (!navigator.clipboard) {
+                alert('Automatic copying is not supported on your browser. Please copy the text manually from the console.');
+                console.info("--- Your Itinerary to Copy ---");
+                console.info(summary);
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(summary);
+                setShareStatus('copied');
+                setTimeout(() => setShareStatus('idle'), 2500);
+            } catch (copyError) {
+                console.error('Failed to copy itinerary:', copyError);
+                alert('Could not copy to clipboard. This feature may not be supported by your browser in this context (e.g., non-HTTPS page).');
+            }
+        };
+
+        // Use Web Share API if available
         if (navigator.share) {
             try {
                 await navigator.share({
                     title: itinerary.title,
                     text: summary,
-                    url: window.location.href,
                 });
             } catch (error) {
-                console.error('Error sharing itinerary:', error);
+                // Ignore AbortError which is triggered when user cancels the share dialog
+                if (error instanceof DOMException && error.name === 'AbortError') {
+                     console.log('Share cancelled by user.');
+                } else {
+                    console.error('Web Share API failed, falling back to clipboard:', error);
+                    await copyToClipboard();
+                }
             }
         } else {
-            try {
-                await navigator.clipboard.writeText(summary);
-                setShareStatus('copied');
-                setTimeout(() => setShareStatus('idle'), 2500);
-            } catch (error) {
-                console.error('Failed to copy itinerary:', error);
-                alert('Failed to copy itinerary to clipboard.');
-            }
+            // Fallback for browsers that don't support Web Share API
+            await copyToClipboard();
         }
     };
 
