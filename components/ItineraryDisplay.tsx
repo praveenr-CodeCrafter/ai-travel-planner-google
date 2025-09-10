@@ -45,6 +45,25 @@ const ShareIcon = () => (
     </svg>
 );
 
+const ClockIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+const CalendarDaysIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+);
+
+const TicketIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+    </svg>
+);
+
+
 interface ItineraryDayCardProps {
     plan: DailyPlan;
     destination: string;
@@ -90,14 +109,43 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                 <li 
                                     key={activityIndex} 
                                     id={getActivityId(plan.day, activity.attractionName)}
-                                    className={`flex items-start activity-item ${isSelected ? 'selected' : ''}`}
+                                    className={`activity-item flex flex-col ${isSelected ? 'selected' : ''}`}
                                     onClick={() => onActivitySelect(isSelected ? null : activity, plan.day)}
                                 >
-                                    <ActivityIcon />
-                                    <div>
-                                        <span className="font-semibold text-gray-600 dark:text-gray-300">{activity.time}: </span>
-                                        <span className="text-gray-500 dark:text-gray-400">{activity.description}</span>
+                                    <div className="flex items-start w-full">
+                                        <ActivityIcon />
+                                        <div>
+                                            <span className="font-semibold text-gray-600 dark:text-gray-300">{activity.time}: </span>
+                                            <span className="text-gray-500 dark:text-gray-400">{activity.description}</span>
+                                        </div>
                                     </div>
+                                    {isSelected && (
+                                        <div className="w-full pl-8 mt-3 animate-details-in">
+                                            <div className="p-3 bg-green-50/50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 text-sm space-y-2">
+                                                {activity.estimatedDuration && (
+                                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                        <ClockIcon />
+                                                        <strong>Duration:</strong> 
+                                                        <span>{activity.estimatedDuration}</span>
+                                                    </div>
+                                                )}
+                                                {activity.openingHours && (
+                                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                        <CalendarDaysIcon />
+                                                        <strong>Hours:</strong> 
+                                                        <span>{activity.openingHours}</span>
+                                                    </div>
+                                                )}
+                                                {activity.bookingInfo && (
+                                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                        <TicketIcon />
+                                                        <strong>Booking:</strong> 
+                                                        <span>{activity.bookingInfo}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </li>
                             )})}
                         </ul>

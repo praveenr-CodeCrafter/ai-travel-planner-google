@@ -17,6 +17,9 @@ export interface Activity {
   description: string;
   attractionName: string;
   coordinates: Coordinates;
+  openingHours?: string;
+  estimatedDuration?: string;
+  bookingInfo?: string;
 }
 
 export interface FoodRec {

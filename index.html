@@ -46,6 +46,23 @@
         animation: scaleIn 0.5s ease-out forwards;
     }
     
+    @keyframes detailsIn {
+        from {
+            opacity: 0;
+            transform: translateY(-0.5rem);
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 10rem;
+        }
+    }
+    .animate-details-in {
+        animation: detailsIn 0.4s ease-out forwards;
+        overflow: hidden;
+    }
+
     /* Marker Animations */
     @keyframes markerPopIn {
         from {

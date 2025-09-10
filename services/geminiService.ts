@@ -26,6 +26,10 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
       - 2-3 specific activities with suggested times.
       - A local food dish to try and a specific, well-regarded restaurant suggestion.
       - A typical weather forecast (e.g., "Sunny and warm") and temperature range for the season.
+      For each activity, also provide:
+      - openingHours: Typical opening hours (e.g., "9:00 AM - 5:00 PM", or "Varies").
+      - estimatedDuration: A suggested duration (e.g., "2-3 hours").
+      - bookingInfo: Booking advice (e.g., "Book tickets online in advance" or "No booking required").
       Ensure attraction and restaurant names are real and well-known for the destination.
       The travel tips should be practical and helpful.
     `;
@@ -89,9 +93,12 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                                                         lng: { type: Type.NUMBER }
                                                     },
                                                     required: ["lat", "lng"]
-                                                }
+                                                },
+                                                openingHours: { type: Type.STRING, description: "Typical opening hours (e.g., '9:00 AM - 5:00 PM')." },
+                                                estimatedDuration: { type: Type.STRING, description: "Suggested duration for the activity (e.g., '2-3 hours')." },
+                                                bookingInfo: { type: Type.STRING, description: "Booking advice (e.g., 'Book tickets online in advance')." },
                                             },
-                                            required: ["time", "description", "attractionName", "coordinates"]
+                                            required: ["time", "description", "attractionName", "coordinates", "openingHours", "estimatedDuration", "bookingInfo"]
                                         }
                                     },
                                     foodToTry: {
