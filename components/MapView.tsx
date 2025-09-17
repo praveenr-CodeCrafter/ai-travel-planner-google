@@ -118,10 +118,10 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
 
     return (
         <div 
-            className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 animate-scale-in"
+            className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-6 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in"
             style={{ animationDelay: '100ms' }}
         >
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">Your Trip on a Map</h2>
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-4">Your Trip on a Map</h2>
             <div ref={mapContainerRef} id="map" className="leaflet-container"></div>
         </div>
     );

@@ -130,22 +130,22 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800/50 p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Plan Your Next Trip</h2>
+        <div className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)]">
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6">Plan Your Next Trip</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Destination and Budget */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="relative" ref={destinationRef}>
-                        <label htmlFor="destination" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Destination</label>
+                        <label htmlFor="destination" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Destination</label>
                         <input type="text" name="destination" id="destination" value={preferences.destination} onChange={handleDestinationChange} autoComplete="off"
-                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white"
+                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
                                placeholder="e.g., Paris, France" />
                         {showSuggestions && destinationSuggestions.length > 0 && (
                             <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
                                 {destinationSuggestions.map((suggestion) => (
                                     <li
                                         key={suggestion}
-                                        className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-green-100 dark:hover:bg-gray-700"
+                                        className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-gray-700"
                                         onMouseDown={() => handleSuggestionClick(suggestion)}
                                     >
                                         {suggestion}
@@ -155,12 +155,12 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                         )}
                     </div>
                     <div>
-                        <label htmlFor="budget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Budget</label>
+                        <label htmlFor="budget" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Budget</label>
                         <div className="flex items-center gap-2">
                              <input type="number" name="budget" id="budget" value={preferences.budget} onChange={handleChange} min="100" step="100"
-                                   className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white"
+                                   className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
                                    placeholder="e.g., 2000" />
-                            <select name="currency" value={preferences.currency} onChange={handleChange} className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white">
+                            <select name="currency" value={preferences.currency} onChange={handleChange} className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
                                 {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
                             </select>
                         </div>
@@ -170,20 +170,20 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                 {/* Dates */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                        <label htmlFor="startDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Start Date</label>
                         <input type="date" name="startDate" id="startDate" value={preferences.startDate} onChange={handleChange} min={today}
-                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white" />
+                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]" />
                     </div>
                     <div>
-                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                        <label htmlFor="endDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">End Date</label>
                         <input type="date" name="endDate" id="endDate" value={preferences.endDate} onChange={handleChange} min={preferences.startDate}
-                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white" />
+                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]" />
                     </div>
                 </div>
 
                 {/* Interests */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Interests</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">Interests</label>
                     <div className="flex flex-wrap gap-3">
                         {INTERESTS_OPTIONS.map((interest) => {
                              const isSelected = preferences.interests.includes(interest);
@@ -191,8 +191,8 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                                 <button key={interest} type="button" onClick={() => handleInterestChange(interest)}
                                         className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
                                             isSelected
-                                                ? 'bg-green-500 text-white shadow'
-                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-gray-600'
+                                                ? 'bg-[var(--color-primary)] text-[var(--color-primary-text)] shadow'
+                                                : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)] hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)]'
                                         }`}>
                                     {isSelected && <CheckIcon />}
                                     {interest}
@@ -202,8 +202,8 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                         <button type="button" onClick={handleOtherInterestClick}
                                 className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
                                     isOtherInterestSelected
-                                        ? 'bg-green-500 text-white shadow'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-gray-600'
+                                        ? 'bg-[var(--color-primary)] text-[var(--color-primary-text)] shadow'
+                                        : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)] hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)]'
                                 }`}>
                             {isOtherInterestSelected && <CheckIcon />}
                             Other
@@ -217,7 +217,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                                 type="text"
                                 value={otherInterest}
                                 onChange={handleOtherInterestChange}
-                                className="w-full md:w-2/3 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900 dark:text-white"
+                                className="w-full md:w-2/3 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
                                 placeholder="Type your custom interest..."
                                 aria-label="Custom interest input"
                             />
@@ -230,7 +230,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                 {/* Submit Button */}
                 <div className="pt-2">
                     <button type="submit" disabled={isLoading}
-                            className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600">
+                            className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600">
                         {isLoading ? (
                            <>
                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

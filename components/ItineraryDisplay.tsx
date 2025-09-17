@@ -10,7 +10,7 @@ interface ItineraryDisplayProps {
 }
 
 const ActivityIcon = () => (
-    <svg className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="h-5 w-5 text-[var(--color-primary)] mr-3 mt-1 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
     </svg>
 );
@@ -28,13 +28,13 @@ const WeatherIcon = () => (
 );
 
 const TipsIcon = () => (
-    <svg className="h-8 w-8 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="h-8 w-8 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
     </svg>
 );
 
 const CheckCircleIcon = () => (
-    <svg className="h-6 w-6 text-green-500 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="h-6 w-6 text-[var(--color-primary)] mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
 );
@@ -81,27 +81,27 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
 
     return (
         <div 
-            className="group bg-white dark:bg-gray-800/50 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] opacity-0 animate-fade-in"
+            className="group bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] rounded-xl shadow-lg overflow-hidden border border-[var(--border-color)] dark:border-[var(--dark-border-color)] transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] opacity-0 animate-fade-in"
             style={{ animationDelay: `${index * 150}ms` }}
         >
             <div className="h-56 w-full overflow-hidden">
                 <GeneratedImage attractionName={keyAttraction} destination={destination} />
             </div>
             <div className="p-6">
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{plan.theme}</h3>
+                <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{plan.theme}</h3>
                 <div className="flex items-center justify-between mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    <p className="font-bold text-green-600 dark:text-green-400 uppercase tracking-wide">Day {plan.day}</p>
+                    <p className="font-bold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] uppercase tracking-wide">Day {plan.day}</p>
                     <div className="flex items-center gap-2">
                         <WeatherIcon />
                         <span>{plan.weather.forecast} &bull; {plan.weather.temperature}</span>
                     </div>
                 </div>
 
-                <hr className="my-4 border-gray-200 dark:border-gray-700" />
+                <hr className="my-4 border-[var(--border-color)] dark:border-[var(--dark-border-color)]" />
                 
                 <div className="space-y-6">
                     <div>
-                        <h4 className="font-semibold text-lg text-gray-700 dark:text-gray-200 mb-3">Activities</h4>
+                        <h4 className="font-semibold text-lg text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-3">Activities</h4>
                         <ul className="space-y-2">
                             {plan.activities.map((activity, activityIndex) => {
                                 const isSelected = selectedActivity?.day === plan.day && selectedActivity?.activity.attractionName === activity.attractionName;
@@ -115,7 +115,7 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                     <div className="flex items-start w-full">
                                         <ActivityIcon />
                                         <div>
-                                            <span className="font-semibold text-gray-600 dark:text-gray-300">{activity.time}: </span>
+                                            <span className="font-semibold text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">{activity.time}: </span>
                                             <span className="text-gray-500 dark:text-gray-400">{activity.description}</span>
                                         </div>
                                     </div>
@@ -153,8 +153,8 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                     <div className="flex items-start">
                         <RestaurantIcon />
                         <div>
-                            <h4 className="font-semibold text-lg text-gray-700 dark:text-gray-200">Local Flavor</h4>
-                            <p className="mt-1 text-gray-600 dark:text-gray-300 font-medium">{plan.foodToTry.dishName}</p>
+                            <h4 className="font-semibold text-lg text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">Local Flavor</h4>
+                            <p className="mt-1 text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] font-medium">{plan.foodToTry.dishName}</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Try it at: {plan.foodToTry.suggestedRestaurant}</p>
                         </div>
                     </div>
@@ -229,12 +229,12 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
     return (
         <div className="space-y-16 mt-12">
             <header className="text-center">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white">{itinerary.title}</h1>
-                <p className="mt-2 text-xl text-gray-600 dark:text-gray-300">Your personalized {itinerary.duration}-day trip to {itinerary.destination}</p>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{itinerary.title}</h1>
+                <p className="mt-2 text-xl text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">Your personalized {itinerary.duration}-day trip to {itinerary.destination}</p>
                 <div className="mt-6 flex justify-center">
                     <button
                         onClick={handleShare}
-                        className="px-5 py-2.5 bg-white dark:bg-gray-700/50 border border-green-500 text-green-500 font-semibold rounded-full hover:bg-green-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
+                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
                         aria-label="Share itinerary"
                         disabled={shareStatus === 'copied'}
                     >
@@ -253,13 +253,13 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
             </div>
             
             <div 
-              className="bg-green-50 dark:bg-gray-800/60 p-8 rounded-xl shadow-lg border-l-4 border-green-400 dark:border-green-500 opacity-0 animate-scale-in"
+              className="bg-[var(--color-primary-light)] dark:bg-gray-800/60 p-8 rounded-xl shadow-lg border-l-4 border-[var(--color-primary)] dark:border-[var(--dark-color-primary)] opacity-0 animate-scale-in"
               style={{ animationDelay: `${itinerary.dailyPlans.length * 150}ms` }}
             >
-                <h3 className="text-3xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-3"><TipsIcon />Travel Tips</h3>
+                <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3"><TipsIcon />Travel Tips</h3>
                 <ul className="space-y-4">
                     {itinerary.travelTips.map((tip, index) => (
-                       <li key={index} className="flex items-start text-gray-700 dark:text-gray-300">
+                       <li key={index} className="flex items-start text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">
                            <CheckCircleIcon />
                            <span>{tip}</span>
                        </li>

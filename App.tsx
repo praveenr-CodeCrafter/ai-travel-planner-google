@@ -55,14 +55,14 @@ const App: React.FC = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-green-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-[var(--bg-primary)] dark:bg-[var(--dark-bg-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] font-sans p-4 sm:p-6 lg:p-8 transition-colors duration-300">
             <div className="max-w-7xl mx-auto">
                 <Header />
                 <main>
                     <TravelForm onGenerate={handleGenerateItinerary} isLoading={isLoading} />
                     
                     {error && (
-                        <div className="mt-8 p-4 bg-red-100 dark:bg-red-900/50 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 rounded-lg shadow-md text-center">
+                        <div className="mt-8 p-4 bg-[var(--color-error-bg)] dark:bg-[var(--dark-color-error-bg)] border border-red-400 dark:border-red-600 text-[var(--color-error)] dark:text-[var(--dark-color-error)] rounded-lg shadow-md text-center">
                             <h3 className="font-bold">Generation Failed</h3>
                             <p>{error}</p>
                         </div>
@@ -84,8 +84,8 @@ const App: React.FC = () => {
                         </div>
                     )}
                 </main>
-                 <footer className="text-center mt-12 py-6 border-t border-gray-200 dark:border-gray-700">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                 <footer className="text-center mt-12 py-6 border-t border-[var(--border-color)] dark:border-[var(--dark-border-color)]">
+                    <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">
                         Powered by Google Gemini. Itinerary and images are AI-generated and may require verification.
                     </p>
                 </footer>
