@@ -16,6 +16,10 @@ const CheckIcon: React.FC = () => (
 
 const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
     const today = new Date().toISOString().split('T')[0];
+    
+    const [duration, setDuration] = useState<number>(7);
+    const [durationUnit, setDurationUnit] = useState<'days' | 'weeks'>('days');
+
     const [preferences, setPreferences] = useState<TravelPreferences>({
         destination: '',
         budget: '2000',
@@ -24,6 +28,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
         endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         interests: ['Sightseeing'],
     });
+    
     const [error, setError] = useState<string | null>(null);
     const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -31,6 +36,26 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
 
     const [isOtherInterestSelected, setIsOtherInterestSelected] = useState(false);
     const [otherInterest, setOtherInterest] = useState('');
+    
+    useEffect(() => {
+        const startDateObj = new Date(preferences.startDate);
+        if (isNaN(startDateObj.getTime())) return;
+
+        const daysToAdd = durationUnit === 'weeks' ? duration * 7 : duration;
+        
+        const endDateObj = new Date(startDateObj);
+        endDateObj.setDate(endDateObj.getDate() + daysToAdd);
+
+        const newEndDate = endDateObj.toISOString().split('T')[0];
+
+        if (newEndDate !== preferences.endDate) {
+             setPreferences(prev => ({
+                ...prev,
+                endDate: newEndDate,
+            }));
+        }
+    }, [preferences.startDate, duration, durationUnit, preferences.endDate]);
+
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -115,8 +140,8 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
             setError("Please enter a destination.");
             return;
         }
-        if (new Date(preferences.endDate) < new Date(preferences.startDate)) {
-            setError("End date cannot be before start date.");
+        if (duration < 1) {
+            setError("Trip duration must be at least 1.");
             return;
         }
         
@@ -167,17 +192,35 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                     </div>
                 </div>
 
-                {/* Dates */}
+                {/* Dates & Duration */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label htmlFor="startDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Start Date</label>
                         <input type="date" name="startDate" id="startDate" value={preferences.startDate} onChange={handleChange} min={today}
                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]" />
                     </div>
-                    <div>
-                        <label htmlFor="endDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">End Date</label>
-                        <input type="date" name="endDate" id="endDate" value={preferences.endDate} onChange={handleChange} min={preferences.startDate}
-                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]" />
+                     <div>
+                        <label htmlFor="duration" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Trip Duration</label>
+                        <div className="flex items-center gap-2">
+                             <input 
+                                type="number" 
+                                name="duration" 
+                                id="duration" 
+                                value={duration} 
+                                onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value, 10) || 1))} 
+                                min="1"
+                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
+                                placeholder="e.g., 7" />
+                            <select 
+                                name="durationUnit" 
+                                value={durationUnit} 
+                                onChange={(e) => setDurationUnit(e.target.value as 'days' | 'weeks')} 
+                                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
+                            >
+                                <option value="days">Days</option>
+                                <option value="weeks">Weeks</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
