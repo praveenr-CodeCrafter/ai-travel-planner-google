@@ -82,7 +82,8 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
         if (!map) return;
 
         // Reset pulse animation on all markers
-        Object.values(markerRefs.current).forEach(marker => {
+        // FIX: Explicitly type `marker` as `any` to resolve a TypeScript error where it was inferred as `unknown`.
+        Object.values(markerRefs.current).forEach((marker: any) => {
             const iconElement = marker.getElement();
             if (iconElement) {
                 iconElement.classList.remove('marker-selected-pulse');

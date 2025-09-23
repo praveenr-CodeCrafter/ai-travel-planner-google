@@ -29,7 +29,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
       For each activity, also provide:
       - openingHours: Typical opening hours (e.g., "9:00 AM - 5:00 PM", or "Varies").
       - estimatedDuration: A suggested duration (e.g., "2-3 hours").
-      - bookingInfo: Booking advice (e.g., "Book tickets online in advance" or "No booking required").
+      - bookingInfo: Practical booking information. State whether tickets need to be booked in advance, if reservations are recommended, or if no booking is needed. Be specific, for example: "Book tickets online a week in advance to save 15%" or "Reservations essential, especially for weekend dinners."
       Ensure attraction and restaurant names are real and well-known for the destination.
       The travel tips should be practical and helpful.
     `;
@@ -96,7 +96,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                                                 },
                                                 openingHours: { type: Type.STRING, description: "Typical opening hours (e.g., '9:00 AM - 5:00 PM')." },
                                                 estimatedDuration: { type: Type.STRING, description: "Suggested duration for the activity (e.g., '2-3 hours')." },
-                                                bookingInfo: { type: Type.STRING, description: "Booking advice (e.g., 'Book tickets online in advance')." },
+                                                bookingInfo: { type: Type.STRING, description: "Practical booking advice, such as whether tickets need to be booked in advance or if reservations are recommended." },
                                             },
                                             required: ["time", "description", "attractionName", "coordinates", "openingHours", "estimatedDuration", "bookingInfo"]
                                         }
