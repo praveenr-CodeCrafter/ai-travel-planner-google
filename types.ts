@@ -40,12 +40,17 @@ export interface DailyPlan {
   weather: Weather;
 }
 
+export interface TravelTip {
+  tip: string;
+  explanation: string;
+}
+
 export interface Itinerary {
   title: string;
   destination: string;
   duration: number;
   coordinates: Coordinates;
-  travelTips: string[];
+  travelTips: TravelTip[];
   dailyPlans: DailyPlan[];
 }
 

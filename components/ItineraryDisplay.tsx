@@ -182,7 +182,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
 
         summary += "💡 Travel Tips:\n";
         itinerary.travelTips.forEach(tip => {
-            summary += `  - ${tip}\n`;
+            summary += `  - ${tip.tip}: ${tip.explanation}\n`;
         });
 
         summary += "\nGenerated with AI Travel Planner!";
@@ -257,11 +257,14 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
               style={{ animationDelay: `${itinerary.dailyPlans.length * 150}ms` }}
             >
                 <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3"><TipsIcon />Travel Tips</h3>
-                <ul className="space-y-4">
+                <ul className="space-y-5">
                     {itinerary.travelTips.map((tip, index) => (
-                       <li key={index} className="flex items-start text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">
+                       <li key={index} className="flex items-start">
                            <CheckCircleIcon />
-                           <span>{tip}</span>
+                           <div>
+                               <h4 className="font-semibold text-md text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{tip.tip}</h4>
+                               <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1 text-sm">{tip.explanation}</p>
+                           </div>
                        </li>
                     ))}
                 </ul>

@@ -31,7 +31,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
       - estimatedDuration: A suggested duration (e.g., "2-3 hours").
       - bookingInfo: Practical booking information. State whether tickets need to be booked in advance, if reservations are recommended, or if no booking is needed. Be specific, for example: "Book tickets online a week in advance to save 15%" or "Reservations essential, especially for weekend dinners."
       Ensure attraction and restaurant names are real and well-known for the destination.
-      The travel tips should be practical and helpful.
+      For each travel tip, provide both the tip itself and a brief, practical explanation or justification. For example, if the tip is 'Learn basic phrases', the explanation might be 'Locals appreciate the effort. Key phrases are "Hello", "Thank you", and "Goodbye" in the local language.'
     `;
     
     try {
@@ -57,8 +57,15 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                         },
                         travelTips: {
                             type: Type.ARRAY,
-                            items: { type: Type.STRING },
-                            description: "A list of practical travel tips."
+                            description: "A list of practical travel tips, each with a brief explanation.",
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    tip: { type: Type.STRING, description: "A concise travel tip." },
+                                    explanation: { type: Type.STRING, description: "A brief explanation or justification for the tip, providing examples or context." }
+                                },
+                                required: ["tip", "explanation"]
+                            }
                         },
                         dailyPlans: {
                             type: Type.ARRAY,
