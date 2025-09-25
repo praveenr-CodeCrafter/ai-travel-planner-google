@@ -162,6 +162,8 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
 
     const flightSearchUrl = `https://www.google.com/search?q=flights+to+${encodeURIComponent(preferences.destination)}+departing+on+${preferences.startDate}+returning+on+${preferences.endDate}`;
 
+    const selectedCurrency = CURRENCY_OPTIONS.find(c => c.code === preferences.currency);
+
     return (
         <div className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)]">
             <h2 className="text-2xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6">Plan Your Next Trip</h2>
@@ -190,9 +192,14 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                     <div>
                         <label htmlFor="budget" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Budget</label>
                         <div className="flex items-center gap-2">
-                             <input type="number" name="budget" id="budget" value={preferences.budget} onChange={handleChange} min="100" step="100"
-                                   className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
-                                   placeholder="e.g., 2000" />
+                             <div className="relative flex-grow">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span className="text-gray-500 dark:text-gray-400">{selectedCurrency?.symbol ?? '$'}</span>
+                                </div>
+                                <input type="number" name="budget" id="budget" value={preferences.budget} onChange={handleChange} min="100" step="100"
+                                    className="w-full py-2 pl-10 pr-4 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
+                                    placeholder="e.g., 2000" />
+                            </div>
                             <select name="currency" value={preferences.currency} onChange={handleChange} className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
                                 {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
                             </select>

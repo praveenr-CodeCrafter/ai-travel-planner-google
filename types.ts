@@ -59,13 +59,13 @@ export const INTERESTS_OPTIONS = [
 ];
 
 export const CURRENCY_OPTIONS = [
-    { code: "USD", name: "United States Dollar" },
-    { code: "EUR", name: "Euro" },
-    { code: "JPY", name: "Japanese Yen" },
-    { code: "GBP", name: "British Pound Sterling" },
-    { code: "CAD", name: "Canadian Dollar" },
-    { code: "AUD", name: "Australian Dollar" },
-    { code: "CHF", name: "Swiss Franc" },
+    { code: "USD", name: "United States Dollar", symbol: "$" },
+    { code: "EUR", name: "Euro", symbol: "€" },
+    { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+    { code: "GBP", name: "British Pound Sterling", symbol: "£" },
+    { code: "CAD", name: "Canadian Dollar", symbol: "CA$" },
+    { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+    { code: "CHF", name: "Swiss Franc", symbol: "CHF" },
 ];
 
 export const COUNTRIES = [
