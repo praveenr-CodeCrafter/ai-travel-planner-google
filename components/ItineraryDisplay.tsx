@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Itinerary, DailyPlan, Activity } from '../types';
 import GeneratedImage from './GeneratedImage';
 import MapView from './MapView';
+import { getAttractionDetails } from '../services/geminiService';
 
 interface ItineraryDisplayProps {
     itinerary: Itinerary;
@@ -63,6 +64,11 @@ const TicketIcon = () => (
     </svg>
 );
 
+const InformationCircleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+    </svg>
+);
 
 interface ItineraryDayCardProps {
     plan: DailyPlan;
@@ -74,9 +80,32 @@ interface ItineraryDayCardProps {
 
 const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, index, selectedActivity, onActivitySelect }) => {
     const keyAttraction = plan.activities.length > 0 ? plan.activities[0].attractionName : "scenic view";
+    const [learnMoreState, setLearnMoreState] = useState<Record<string, { isOpen: boolean; data: { description: string; sources: Array<{uri: string, title: string}> } | null; isLoading: boolean; error: string | null }>>({});
 
     const getActivityId = (day: number, attractionName: string) => {
         return `activity-${day}-${attractionName.replace(/\s+/g, '-').toLowerCase()}`;
+    };
+
+    const handleLearnMoreClick = async (attractionName: string) => {
+        const currentState = learnMoreState[attractionName];
+
+        if (currentState?.isOpen) {
+            setLearnMoreState(prev => ({ ...prev, [attractionName]: { ...prev[attractionName], isOpen: false } }));
+            return;
+        }
+
+        if (currentState?.data) {
+            setLearnMoreState(prev => ({ ...prev, [attractionName]: { ...prev[attractionName], isOpen: true } }));
+            return;
+        }
+
+        setLearnMoreState(prev => ({ ...prev, [attractionName]: { isOpen: true, data: null, isLoading: true, error: null } }));
+        try {
+            const result = await getAttractionDetails(attractionName, destination);
+            setLearnMoreState(prev => ({ ...prev, [attractionName]: { isOpen: true, data: result, isLoading: false, error: null } }));
+        } catch (err) {
+            setLearnMoreState(prev => ({ ...prev, [attractionName]: { isOpen: true, data: null, isLoading: false, error: 'Could not load details.' } }));
+        }
     };
 
     return (
@@ -105,6 +134,7 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                         <ul className="space-y-2">
                             {plan.activities.map((activity, activityIndex) => {
                                 const isSelected = selectedActivity?.day === plan.day && selectedActivity?.activity.attractionName === activity.attractionName;
+                                const currentLearnMoreState = learnMoreState[activity.attractionName];
                                 return (
                                 <li 
                                     key={activityIndex} 
@@ -120,7 +150,7 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                         </div>
                                     </div>
                                     {isSelected && (
-                                        <div className="w-full pl-8 mt-3 animate-details-in">
+                                        <div className="w-full pl-8 mt-3 animate-details-in space-y-3">
                                             <div className="p-3 bg-green-50/50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 text-sm space-y-2">
                                                 {activity.estimatedDuration && (
                                                     <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
@@ -141,6 +171,51 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                                         <TicketIcon />
                                                         <strong>Booking:</strong> 
                                                         <span>{activity.bookingInfo}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                             {/* Learn More Section */}
+                                            <div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleLearnMoreClick(activity.attractionName); }}
+                                                    className="w-full flex items-center justify-center text-sm px-3 py-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-gray-700/80 hover:bg-green-200/60 dark:hover:bg-gray-600/80 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                                                    disabled={currentLearnMoreState?.isLoading}
+                                                    aria-expanded={!!currentLearnMoreState?.isOpen}
+                                                >
+                                                    <InformationCircleIcon />
+                                                    {currentLearnMoreState?.isLoading ? 'Loading...' : (currentLearnMoreState?.isOpen ? 'Hide Details' : 'Learn More')}
+                                                </button>
+
+                                                {currentLearnMoreState?.isOpen && (
+                                                    <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 text-sm space-y-2 animate-details-in">
+                                                        {currentLearnMoreState.isLoading ? (
+                                                            <div className="flex justify-center items-center py-4">
+                                                                <svg className="animate-spin h-6 w-6 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                </svg>
+                                                            </div>
+                                                        ) : currentLearnMoreState.error ? (
+                                                            <p className="text-red-500">{currentLearnMoreState.error}</p>
+                                                        ) : currentLearnMoreState.data && (
+                                                            <>
+                                                                <p className="text-gray-700 dark:text-gray-300">{currentLearnMoreState.data.description}</p>
+                                                                {currentLearnMoreState.data.sources.length > 0 && (
+                                                                    <div className="pt-2">
+                                                                        <h5 className="font-semibold text-gray-800 dark:text-gray-200">Sources:</h5>
+                                                                        <ul className="list-disc list-inside space-y-1">
+                                                                            {currentLearnMoreState.data.sources.map((source, i) => (
+                                                                                <li key={i}>
+                                                                                    <a href={source.uri} target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">
+                                                                                        {source.title}
+                                                                                    </a>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

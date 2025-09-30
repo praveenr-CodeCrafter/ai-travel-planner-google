@@ -136,6 +136,41 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
     }
 };
 
+export const getAttractionDetails = async (attractionName: string, destination: string): Promise<{ description: string; sources: Array<{uri: string, title: string}> }> => {
+    const prompt = `Provide a concise, one-paragraph summary for the attraction "${attractionName}" located in ${destination}.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                tools: [{googleSearch: {}}],
+            },
+        });
+
+        const description = response.text;
+        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
+        
+        const sources = groundingChunks
+            .map((chunk: any) => chunk.web)
+            .filter((web: any) => web && web.uri && web.title)
+            .reduce((acc: any[], current: any) => {
+                if (!acc.find(item => item.uri === current.uri)) {
+                    acc.push(current);
+                }
+                return acc;
+            }, []);
+
+        return {
+            description,
+            sources,
+        };
+    } catch (error) {
+        console.error(`Error fetching details for ${attractionName}:`, error);
+        throw new Error("Failed to fetch attraction details.");
+    }
+};
+
 export const generateImageForAttraction = async (attractionName: string, destination: string): Promise<string> => {
     const prompt = `Vibrant, photorealistic travel photograph of ${attractionName}, ${destination}. Show the landmark clearly in a beautiful, scenic context. No people in the foreground.`;
     try {
