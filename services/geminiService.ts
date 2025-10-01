@@ -32,6 +32,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
       - bookingInfo: Practical booking information. State whether tickets need to be booked in advance, if reservations are recommended, or if no booking is needed. Be specific, for example: "Book tickets online a week in advance to save 15%" or "Reservations essential, especially for weekend dinners."
       Ensure attraction and restaurant names are real and well-known for the destination.
       For each travel tip, provide both the tip itself and a brief, practical explanation or justification. For example, if the tip is 'Learn basic phrases', the explanation might be 'Locals appreciate the effort. Key phrases are "Hello", "Thank you", and "Goodbye" in the local language.'
+      Finally, create a 'packingList'. Suggest 5-7 essential items to pack based on the destination, weather, and planned activities. For each item, provide a brief 'reason' explaining why it's recommended.
     `;
     
     try {
@@ -120,9 +121,21 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                                 },
                                 required: ["day", "theme", "weather", "activities", "foodToTry"]
                             }
+                        },
+                        packingList: {
+                            type: Type.ARRAY,
+                            description: "A list of suggested items to pack, each with a brief reason.",
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    item: { type: Type.STRING, description: "The name of the packing item (e.g., 'Rain Jacket')." },
+                                    reason: { type: Type.STRING, description: "A brief justification for packing the item." }
+                                },
+                                required: ["item", "reason"]
+                            }
                         }
                     },
-                    required: ["title", "destination", "duration", "coordinates", "travelTips", "dailyPlans"]
+                    required: ["title", "destination", "duration", "coordinates", "travelTips", "dailyPlans", "packingList"]
                 }
             }
         });

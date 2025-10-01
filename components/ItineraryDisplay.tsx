@@ -40,6 +40,12 @@ const CheckCircleIcon = () => (
     </svg>
 );
 
+const PackingListIcon = () => (
+    <svg className="h-8 w-8 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+    </svg>
+);
+
 const ShareIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
         <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
@@ -326,10 +332,30 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                     <ItineraryDayCard key={plan.day} plan={plan} destination={itinerary.destination} index={index} selectedActivity={selectedActivity} onActivitySelect={onActivitySelect} />
                 ))}
             </div>
+
+            {itinerary.packingList && itinerary.packingList.length > 0 && (
+                <div 
+                    className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in"
+                    style={{ animationDelay: `${itinerary.dailyPlans.length * 100}ms` }}
+                >
+                    <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3"><PackingListIcon />Packing List</h3>
+                    <ul className="space-y-5">
+                        {itinerary.packingList.map((item, index) => (
+                           <li key={index} className="flex items-start">
+                               <CheckCircleIcon />
+                               <div>
+                                   <h4 className="font-semibold text-md text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{item.item}</h4>
+                                   <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1 text-sm">{item.reason}</p>
+                               </div>
+                           </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
             
             <div 
               className="bg-[var(--color-primary-light)] dark:bg-gray-800/60 p-8 rounded-xl shadow-lg border-l-4 border-[var(--color-primary)] dark:border-[var(--dark-color-primary)] opacity-0 animate-scale-in"
-              style={{ animationDelay: `${itinerary.dailyPlans.length * 150}ms` }}
+              style={{ animationDelay: `${itinerary.dailyPlans.length * 100 + 150}ms` }}
             >
                 <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3"><TipsIcon />Travel Tips</h3>
                 <ul className="space-y-5">

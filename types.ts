@@ -45,6 +45,11 @@ export interface TravelTip {
   explanation: string;
 }
 
+export interface PackingListItem {
+  item: string;
+  reason: string;
+}
+
 export interface Itinerary {
   title: string;
   destination: string;
@@ -52,6 +57,7 @@ export interface Itinerary {
   coordinates: Coordinates;
   travelTips: TravelTip[];
   dailyPlans: DailyPlan[];
+  packingList: PackingListItem[];
 }
 
 export const INTERESTS_OPTIONS = [
