@@ -138,6 +138,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
         setOtherInterest(newCustomValue); // Update the state for the input field
     };
 
+    const selectedCurrency = CURRENCY_OPTIONS.find(c => c.code === preferences.currency);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -146,6 +147,13 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
             setError("Please enter a destination.");
             return;
         }
+
+        const budgetValue = parseFloat(preferences.budget);
+        if (isNaN(budgetValue) || budgetValue < 100) {
+            setError(`Budget must be a valid number of at least ${selectedCurrency?.symbol ?? ''}100.`);
+            return;
+        }
+        
         if (duration < 1) {
             setError("Trip duration must be at least 1.");
             return;
@@ -161,8 +169,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
     };
 
     const flightSearchUrl = `https://www.google.com/search?q=flights+to+${encodeURIComponent(preferences.destination)}+departing+on+${preferences.startDate}+returning+on+${preferences.endDate}`;
-
-    const selectedCurrency = CURRENCY_OPTIONS.find(c => c.code === preferences.currency);
 
     return (
         <div className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)]">
