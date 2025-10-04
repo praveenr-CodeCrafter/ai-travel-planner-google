@@ -76,6 +76,12 @@ const InformationCircleIcon = () => (
     </svg>
 );
 
+const PlaneIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+    </svg>
+);
+
 interface ItineraryDayCardProps {
     plan: DailyPlan;
     destination: string;
@@ -245,6 +251,40 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
     );
 };
 
+const FlightBookingCard: React.FC<{ destination: string, startDate: string, endDate: string }> = ({ destination, startDate, endDate }) => {
+    if (!destination || !startDate || !endDate) return null;
+
+    const flightSearchUrl = `https://www.google.com/search?q=flights+to+${encodeURIComponent(destination)}+departing+on+${startDate}+returning+on+${endDate}`;
+    
+    const formatDate = (dateString: string) => {
+        // Adding a time to avoid timezone issues where the date might be interpreted as the previous day.
+        return new Date(dateString + 'T00:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+    };
+
+    return (
+        <div className="p-6 my-8 rounded-xl bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white shadow-lg animate-scale-in">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="text-center md:text-left">
+                    <h2 className="text-2xl font-bold">Ready to Go?</h2>
+                    <p className="text-lg opacity-90 mt-1">
+                        Find flights for your trip from {formatDate(startDate)} to {formatDate(endDate)}.
+                    </p>
+                </div>
+                <a
+                    href={flightSearchUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 flex items-center gap-2 px-6 py-3 bg-white text-[var(--color-primary)] font-bold rounded-full shadow-md hover:bg-gray-100 transition-transform transform hover:scale-105"
+                >
+                    <PlaneIcon />
+                    <span>Search Flights</span>
+                </a>
+            </div>
+        </div>
+    );
+};
+
+
 const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selectedActivity, onActivitySelect }) => {
     const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
 
@@ -324,6 +364,14 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                     </button>
                 </div>
             </header>
+
+            {itinerary.startDate && itinerary.endDate && (
+                <FlightBookingCard 
+                    destination={itinerary.destination} 
+                    startDate={itinerary.startDate} 
+                    endDate={itinerary.endDate} 
+                />
+            )}
 
             {itinerary.coordinates && <MapView itinerary={itinerary} selectedActivity={selectedActivity} onActivitySelect={onActivitySelect} />}
 

@@ -13,13 +13,6 @@ const CheckIcon: React.FC = () => (
     </svg>
 );
 
-const PlaneIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-    </svg>
-);
-
-
 const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
     const today = new Date().toISOString().split('T')[0];
     
@@ -168,8 +161,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
         onGenerate({...preferences, interests: finalInterests});
     };
 
-    const flightSearchUrl = `https://www.google.com/search?q=flights+to+${encodeURIComponent(preferences.destination)}+departing+on+${preferences.startDate}+returning+on+${preferences.endDate}`;
-
     return (
         <div className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)]">
             <h2 className="text-2xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6">Plan Your Next Trip</h2>
@@ -292,9 +283,9 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                 {error && <p className="text-red-500 text-sm">{error}</p>}
 
                 {/* Action Buttons */}
-                <div className="pt-2 space-y-4 md:space-y-0 md:flex md:flex-row-reverse md:gap-4">
+                <div className="pt-2">
                     <button type="submit" disabled={isLoading}
-                            className="w-full md:w-2/3 flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600">
+                            className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600">
                         {isLoading ? (
                            <>
                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -305,23 +296,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                            </>
                         ) : 'Generate Itinerary'}
                     </button>
-                    <a
-                        href={flightSearchUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`w-full md:w-1/3 flex justify-center items-center gap-2 px-6 py-3 border border-[var(--color-primary)] text-base font-medium rounded-md shadow-sm text-[var(--color-primary)] bg-transparent hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-colors ${
-                            !preferences.destination.trim() ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
-                        }`}
-                        aria-disabled={!preferences.destination.trim()}
-                        onClick={(e) => {
-                            if (!preferences.destination.trim()) {
-                                e.preventDefault();
-                            }
-                        }}
-                    >
-                        <PlaneIcon />
-                        Search Flights
-                    </a>
                 </div>
             </form>
         </div>

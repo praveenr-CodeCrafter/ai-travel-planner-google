@@ -15,11 +15,12 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
     const prompt = `
       You are an expert travel planner. Create a detailed, day-by-day travel itinerary based on these user preferences:
       - Destination: ${destination}
-      - Trip Duration: ${days} day(s)
+      - Trip Duration: ${days} day(s), from ${startDate} to ${endDate}
       - Budget: Approximately ${budget} ${currency}
       - Interests: ${interests.join(", ")}
 
       Your response must be a JSON object that strictly follows this schema.
+      The 'startDate' and 'endDate' fields in the JSON response must be '${startDate}' and '${endDate}' respectively.
       Include precise latitude and longitude coordinates for the main destination and for each individual attraction.
       For each day, provide:
       - A creative theme.
@@ -47,6 +48,8 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                         title: { type: Type.STRING, description: "A catchy title for the trip." },
                         destination: { type: Type.STRING },
                         duration: { type: Type.INTEGER },
+                        startDate: { type: Type.STRING, description: "The start date of the trip in YYYY-MM-DD format." },
+                        endDate: { type: Type.STRING, description: "The end date of the trip in YYYY-MM-DD format." },
                         coordinates: {
                             type: Type.OBJECT,
                             description: "Latitude and Longitude for the destination city.",
@@ -135,7 +138,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                             }
                         }
                     },
-                    required: ["title", "destination", "duration", "coordinates", "travelTips", "dailyPlans", "packingList"]
+                    required: ["title", "destination", "duration", "startDate", "endDate", "coordinates", "travelTips", "dailyPlans", "packingList"]
                 }
             }
         });
