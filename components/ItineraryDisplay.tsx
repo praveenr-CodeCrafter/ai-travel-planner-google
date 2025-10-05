@@ -120,9 +120,11 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
         }
     };
 
+    const isDaySelected = selectedActivity?.day === plan.day;
+
     return (
         <div 
-            className="group bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] rounded-xl shadow-lg overflow-hidden border border-[var(--border-color)] dark:border-[var(--dark-border-color)] transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] opacity-0 animate-fade-in"
+            className={`group bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] opacity-0 animate-fade-in ${isDaySelected ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-primary)] dark:ring-offset-[var(--dark-bg-primary)] ring-[var(--color-primary)] scale-105' : 'border border-[var(--border-color)] dark:border-[var(--dark-border-color)]'}`}
             style={{ animationDelay: `${index * 150}ms` }}
         >
             <div className="h-56 w-full overflow-hidden">

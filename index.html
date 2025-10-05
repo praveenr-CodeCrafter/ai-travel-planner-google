@@ -7,7 +7,10 @@
     <title>AI Travel Planner</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -116,6 +119,33 @@
         border-radius: 0.5rem;
         padding: 0.75rem;
         cursor: pointer;
+    }
+
+    /* Marker Cluster Customization */
+    .marker-cluster-small,
+    .marker-cluster-medium,
+    .marker-cluster-large {
+        background-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
+        backdrop-filter: blur(2px);
+        border: 1px solid color-mix(in srgb, var(--color-primary-text) 50%, transparent);
+    }
+    .marker-cluster-small div,
+    .marker-cluster-medium div,
+    .marker-cluster-large div {
+        color: var(--color-primary-text);
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    .dark .marker-cluster-small,
+    .dark .marker-cluster-medium,
+    .dark .marker-cluster-large {
+        background-color: color-mix(in srgb, var(--dark-color-primary) 80%, transparent);
+        border-color: color-mix(in srgb, var(--dark-bg-primary) 50%, transparent);
+    }
+    .dark .marker-cluster-small div,
+    .dark .marker-cluster-medium div,
+    .dark .marker-cluster-large div {
+        color: var(--dark-bg-primary);
     }
 </style>
 </head>

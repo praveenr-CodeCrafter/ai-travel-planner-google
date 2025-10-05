@@ -28,13 +28,14 @@ const App: React.FC = () => {
     }, [selectedActivity]);
 
 
-    const handleActivitySelect = (activity: Activity | null, day?: number) => {
+    // FIX: Wrap handleActivitySelect in useCallback to prevent unnecessary re-renders of child components like MapView.
+    const handleActivitySelect = useCallback((activity: Activity | null, day?: number) => {
         if (activity && day !== undefined) {
             setSelectedActivity({ activity, day });
         } else {
             setSelectedActivity(null);
         }
-    };
+    }, []);
 
     const handleGenerateItinerary = useCallback(async (preferences: TravelPreferences) => {
         setIsLoading(true);

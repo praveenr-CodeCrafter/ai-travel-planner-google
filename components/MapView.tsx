@@ -13,6 +13,13 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<any>(null);
     const markerRefs = useRef<Record<string, any>>({});
+    const selectedActivityRef = useRef(selectedActivity);
+    // FIX: Add a ref to hold the marker cluster group instance. This is a robust way to access it later.
+    const clusterGroupRef = useRef<any>(null);
+
+    useEffect(() => {
+        selectedActivityRef.current = selectedActivity;
+    }, [selectedActivity]);
 
     const getActivityId = (day: number, attractionName: string) => {
         return `activity-${day}-${attractionName.replace(/\s+/g, '-').toLowerCase()}`;
@@ -35,15 +42,18 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
         
-        const markers: any[] = [];
+        const markersGroup = L.markerClusterGroup();
+        // FIX: Store the marker cluster group instance in the ref.
+        clusterGroupRef.current = markersGroup;
         let markerIndex = 0;
 
         itinerary.dailyPlans.forEach(plan => {
             plan.activities.forEach(activity => {
                 if (activity.coordinates) {
                     const marker = L.marker([activity.coordinates.lat, activity.coordinates.lng])
-                        .addTo(map)
                         .bindPopup(`<b>${activity.attractionName}</b><br>${activity.description}`);
+                    
+                    markersGroup.addLayer(marker);
                     
                     const iconElement = marker.getElement();
                     if (iconElement) {
@@ -56,33 +66,32 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
                     markerRefs.current[activityId] = marker;
 
                     marker.on('click', () => {
-                        const isCurrentlySelected = selectedActivity?.day === plan.day && selectedActivity?.activity.attractionName === activity.attractionName;
+                        const isCurrentlySelected = selectedActivityRef.current?.day === plan.day && selectedActivityRef.current?.activity.attractionName === activity.attractionName;
                         onActivitySelect(isCurrentlySelected ? null : activity, plan.day);
                     });
-
-                    markers.push(marker);
                 }
             });
         });
+        
+        map.addLayer(markersGroup);
 
-        if (markers.length > 0) {
-            const group = L.featureGroup(markers);
-            map.fitBounds(group.getBounds().pad(0.2));
+        if (itinerary.dailyPlans.some(p => p.activities.some(a => a.coordinates))) {
+            map.fitBounds(markersGroup.getBounds().pad(0.2));
         }
 
         return () => {
-            map.remove();
-            mapRef.current = null;
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+            }
         };
 
-    }, [itinerary, onActivitySelect]); // Rerun only when the whole itinerary changes
+    }, [itinerary, onActivitySelect]); 
 
     useEffect(() => {
         const map = mapRef.current;
         if (!map) return;
 
-        // Reset pulse animation on all markers
-        // FIX: Explicitly type `marker` as `any` to resolve a TypeScript error where it was inferred as `unknown`.
         Object.values(markerRefs.current).forEach((marker: any) => {
             const iconElement = marker.getElement();
             if (iconElement) {
@@ -101,16 +110,22 @@ const MapView: React.FC<MapViewProps> = ({ itinerary, selectedActivity, onActivi
                     animate: true,
                     duration: 1,
                 });
-                marker.openPopup();
                 
-                // Add pulse animation to selected marker's icon
+                // For clustered markers, we need to zoom in to reveal the marker before opening the popup
+                // FIX: Access the cluster group via the ref instead of a fragile DOM query and private property access.
+                const clusterGroup = clusterGroupRef.current;
+                if (clusterGroup && clusterGroup.getVisibleParent && clusterGroup.getVisibleParent(marker) !== marker) {
+                     clusterGroup.zoomToShowLayer(marker, () => marker.openPopup());
+                } else {
+                    marker.openPopup();
+                }
+                
                 const iconElement = marker.getElement();
                 if (iconElement) {
                     iconElement.classList.add('marker-selected-pulse');
                 }
             }
         } else {
-             // Optional: Close any open popups when selection is cleared
              map.closePopup();
         }
 
