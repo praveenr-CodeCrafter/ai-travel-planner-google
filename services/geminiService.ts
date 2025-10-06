@@ -31,6 +31,8 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
       - openingHours: Typical opening hours (e.g., "9:00 AM - 5:00 PM", or "Varies").
       - estimatedDuration: A suggested duration (e.g., "2-3 hours").
       - bookingInfo: Practical booking information. State whether tickets need to be booked in advance, if reservations are recommended, or if no booking is needed. Be specific, for example: "Book tickets online a week in advance to save 15%" or "Reservations essential, especially for weekend dinners."
+      - userReviewsSummary: A brief, one-sentence summary of user reviews (e.g., "Highly rated for its breathtaking views and historical significance."). If review information is not readily available, return "N/A".
+      - averageCost: The estimated cost per person (e.g., "$25 USD", "Free entry"). If cost information is not readily available, return "N/A".
       Ensure attraction and restaurant names are real and well-known for the destination.
       For each travel tip, provide both the tip itself and a brief, practical explanation or justification. For example, if the tip is 'Learn basic phrases', the explanation might be 'Locals appreciate the effort. Key phrases are "Hello", "Thank you", and "Goodbye" in the local language.'
       Finally, create a 'packingList'. Suggest 5-7 essential items to pack based on the destination, weather, and planned activities. For each item, provide a brief 'reason' explaining why it's recommended.
@@ -108,8 +110,10 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                                                 openingHours: { type: Type.STRING, description: "Typical opening hours (e.g., '9:00 AM - 5:00 PM')." },
                                                 estimatedDuration: { type: Type.STRING, description: "Suggested duration for the activity (e.g., '2-3 hours')." },
                                                 bookingInfo: { type: Type.STRING, description: "Practical booking advice, such as whether tickets need to be booked in advance or if reservations are recommended." },
+                                                userReviewsSummary: { type: Type.STRING, description: "A one-sentence summary of user reviews. 'N/A' if not available." },
+                                                averageCost: { type: Type.STRING, description: "The estimated cost per person. 'N/A' if not available." },
                                             },
-                                            required: ["time", "description", "attractionName", "coordinates", "openingHours", "estimatedDuration", "bookingInfo"]
+                                            required: ["time", "description", "attractionName", "coordinates", "openingHours", "estimatedDuration", "bookingInfo", "userReviewsSummary", "averageCost"]
                                         }
                                     },
                                     foodToTry: {

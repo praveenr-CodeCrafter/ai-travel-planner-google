@@ -20,6 +20,8 @@ export interface Activity {
   openingHours?: string;
   estimatedDuration?: string;
   bookingInfo?: string;
+  userReviewsSummary?: string;
+  averageCost?: string;
 }
 
 export interface FoodRec {
