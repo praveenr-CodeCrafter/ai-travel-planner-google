@@ -64,6 +64,11 @@ export interface Itinerary {
   packingList: PackingListItem[];
 }
 
+export interface SavedItinerary extends Itinerary {
+  id: string;
+  savedAt: string;
+}
+
 export const INTERESTS_OPTIONS = [
   "Food",
   "Adventure",

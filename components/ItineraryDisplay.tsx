@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import type { Itinerary, DailyPlan, Activity } from '../types';
+import React, { useState, useEffect } from 'react';
+import type { Itinerary, DailyPlan, Activity, SavedItinerary } from '../types';
 import GeneratedImage from './GeneratedImage';
 import MapView from './MapView';
 import { getAttractionDetails } from '../services/geminiService';
 
 interface ItineraryDisplayProps {
-    itinerary: Itinerary;
+    itinerary: Itinerary | SavedItinerary;
     selectedActivity: { activity: Activity, day: number } | null;
     onActivitySelect: (activity: Activity | null, day?: number) => void;
+    onSaveItinerary: () => void;
 }
 
 const ActivityIcon = () => (
@@ -50,6 +51,12 @@ const ShareIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
         <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
     </svg>
+);
+
+const SaveIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path d="M17 3H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7l-4-4zm-5 11a3 3 0 110-6 3 3 0 010 6zM12 5H5v10h2v-4a1 1 0 011-1h4a1 1 0 011 1v4h2V5z" />
+  </svg>
 );
 
 const ClockIcon = () => (
@@ -316,8 +323,20 @@ const FlightBookingCard: React.FC<{ destination: string, startDate: string, endD
 };
 
 
-const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selectedActivity, onActivitySelect }) => {
+const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selectedActivity, onActivitySelect, onSaveItinerary }) => {
     const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
+    const isAlreadySaved = 'id' in itinerary;
+
+    useEffect(() => {
+        setSaveStatus('idle');
+    }, [itinerary]);
+
+    const handleSave = () => {
+        onSaveItinerary();
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2500);
+    };
 
     const handleShare = async () => {
         let summary = `✈️ My Trip Itinerary: ${itinerary.title} ✈️\n\n`;
@@ -383,7 +402,16 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
             <header className="text-center">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{itinerary.title}</h1>
                 <p className="mt-2 text-xl text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">Your personalized {itinerary.duration}-day trip to {itinerary.destination}</p>
-                <div className="mt-6 flex justify-center">
+                <div className="mt-6 flex flex-wrap justify-center gap-4">
+                    <button
+                        onClick={handleSave}
+                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                        aria-label="Save itinerary"
+                        disabled={isAlreadySaved || saveStatus === 'saved'}
+                    >
+                        <SaveIcon />
+                        <span>{isAlreadySaved ? 'Itinerary Saved' : (saveStatus === 'saved' ? 'Saved!' : 'Save Itinerary')}</span>
+                    </button>
                     <button
                         onClick={handleShare}
                         className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
