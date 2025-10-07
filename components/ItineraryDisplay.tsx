@@ -36,10 +36,11 @@ const TipsIcon = () => (
 );
 
 const CheckCircleIcon = () => (
-    <svg className="h-6 w-6 text-[var(--color-primary)] mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="h-10 w-10 text-[var(--color-primary)] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
 );
+
 
 const PackingListIcon = () => (
     <svg className="h-8 w-8 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -99,6 +100,18 @@ const InformationCircleIcon = () => (
 const PlaneIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
         <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+    </svg>
+);
+
+const FeedbackIcon = () => (
+    <svg className="h-8 w-8 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.05 4.575a1.575 1.575 0 10-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 013.15 0v1.5m-3.15 0l.075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 013.15 0V15M6.9 7.575a1.575 1.575 0 10-3.15 0v8.175a6.75 6.75 0 006.75 6.75h2.018a5.25 5.25 0 005.25-5.25v-2.909m-16.5 0a1.575 1.575 0 10-3.15 0v2.909a5.25 5.25 0 005.25 5.25h5.382" />
+    </svg>
+);
+
+const RatingStarIcon = ({ filled }: { filled: boolean }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 cursor-pointer transition-colors ${filled ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-300'}`} viewBox="0 0 20 20" fill="currentColor">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
     </svg>
 );
 
@@ -328,8 +341,18 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
     const isAlreadySaved = 'id' in itinerary;
 
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false);
+
     useEffect(() => {
         setSaveStatus('idle');
+        // Reset feedback form when a new itinerary is displayed
+        setRating(0);
+        setHoverRating(0);
+        setComment('');
+        setIsFeedbackSubmitted(false);
     }, [itinerary]);
 
     const handleSave = () => {
@@ -397,6 +420,16 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
         }
     };
 
+    const handleFeedbackSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log('--- User Feedback Submitted ---');
+        console.log('Itinerary:', itinerary.title);
+        console.log('Rating:', rating);
+        console.log('Comment:', comment);
+        console.log('-------------------------------');
+        setIsFeedbackSubmitted(true);
+    };
+
     return (
         <div className="space-y-16 mt-12">
             <header className="text-center">
@@ -449,7 +482,9 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                     <ul className="space-y-5">
                         {itinerary.packingList.map((item, index) => (
                            <li key={index} className="flex items-start">
-                               <CheckCircleIcon />
+                               <div className="flex-shrink-0 h-6 w-6 text-[var(--color-primary)] mr-3">
+                                    <CheckCircleIcon />
+                               </div>
                                <div>
                                    <h4 className="font-semibold text-md text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{item.item}</h4>
                                    <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1 text-sm">{item.reason}</p>
@@ -468,7 +503,9 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                 <ul className="space-y-5">
                     {itinerary.travelTips.map((tip, index) => (
                        <li key={index} className="flex items-start">
-                           <CheckCircleIcon />
+                           <div className="flex-shrink-0 h-6 w-6 text-[var(--color-primary)] mr-3">
+                                <CheckCircleIcon />
+                           </div>
                            <div>
                                <h4 className="font-semibold text-md text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{tip.tip}</h4>
                                <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1 text-sm">{tip.explanation}</p>
@@ -476,6 +513,69 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                        </li>
                     ))}
                 </ul>
+            </div>
+
+            {/* User Feedback Section */}
+            <div
+                className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in"
+                style={{ animationDelay: `${itinerary.dailyPlans.length * 100 + 300}ms` }}
+            >
+                {isFeedbackSubmitted ? (
+                    <div className="text-center py-8">
+                        <CheckCircleIcon />
+                        <h3 className="text-2xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mt-4">Thank you for your feedback!</h3>
+                        <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1">We appreciate you helping us improve.</p>
+                    </div>
+                ) : (
+                    <>
+                        <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3">
+                            <FeedbackIcon />
+                            Rate This Itinerary
+                        </h3>
+                        <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">
+                                    Overall Rating
+                                </label>
+                                <div className="flex items-center space-x-1" onMouseLeave={() => setHoverRating(0)}>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onMouseEnter={() => setHoverRating(star)}
+                                            onClick={() => setRating(star)}
+                                            aria-label={`Rate ${star} stars`}
+                                            className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 rounded-full"
+                                        >
+                                            <RatingStarIcon filled={star <= (hoverRating || rating)} />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="feedback-comment" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">
+                                    Suggestions for improvement (optional)
+                                </label>
+                                <textarea
+                                    id="feedback-comment"
+                                    name="comment"
+                                    rows={4}
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
+                                    placeholder="What did you like or dislike? What could be better?"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={rating === 0}
+                                className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600"
+                            >
+                                Submit Feedback
+                            </button>
+                        </form>
+                    </>
+                )}
             </div>
         </div>
     );
