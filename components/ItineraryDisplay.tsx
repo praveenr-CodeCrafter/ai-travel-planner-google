@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Itinerary, DailyPlan, Activity, SavedItinerary } from '../types';
 import GeneratedImage from './GeneratedImage';
 import MapView from './MapView';
+import PdfExportContent from './PdfExportContent';
 import { getAttractionDetails } from '../services/geminiService';
+
+declare var jspdf: any;
+declare var html2canvas: any;
 
 interface ItineraryDisplayProps {
     itinerary: Itinerary | SavedItinerary;
@@ -58,6 +62,12 @@ const SaveIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
     <path d="M17 3H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7l-4-4zm-5 11a3 3 0 110-6 3 3 0 010 6zM12 5H5v10h2v-4a1 1 0 011-1h4a1 1 0 011 1v4h2V5z" />
   </svg>
+);
+
+const DownloadIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+    </svg>
 );
 
 const ClockIcon = () => (
@@ -346,14 +356,100 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
     const [comment, setComment] = useState('');
     const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false);
 
+    const [isExporting, setIsExporting] = useState(false);
+    const [pdfExportData, setPdfExportData] = useState<{
+        itinerary: Itinerary | SavedItinerary;
+        mapImage: string;
+        attractionImages: Record<string, string>;
+    } | null>(null);
+    const pdfContentRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         setSaveStatus('idle');
-        // Reset feedback form when a new itinerary is displayed
         setRating(0);
         setHoverRating(0);
         setComment('');
         setIsFeedbackSubmitted(false);
     }, [itinerary]);
+    
+    useEffect(() => {
+        if (pdfExportData && pdfContentRef.current) {
+            html2canvas(pdfContentRef.current, { scale: 2, useCORS: true, allowTaint: true })
+                .then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF({
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: 'a4',
+                    });
+
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const canvasWidth = canvas.width;
+                    const canvasHeight = canvas.height;
+                    const ratio = canvasWidth / pdfWidth;
+                    const imgHeight = canvasHeight / ratio;
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                        heightLeft -= pdfHeight;
+                    }
+                    
+                    const fileName = `${itinerary.destination.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}_trip.pdf`;
+                    pdf.save(fileName);
+                })
+                .catch(err => {
+                    console.error("Error generating PDF:", err);
+                    alert("Sorry, there was an error creating the PDF. Please try again.");
+                })
+                .finally(() => {
+                    setPdfExportData(null);
+                    setIsExporting(false);
+                });
+        }
+    }, [pdfExportData, itinerary.destination]);
+
+    const handleExportPdf = async () => {
+        setIsExporting(true);
+
+        const mapEl = document.getElementById('map');
+        if (!mapEl) {
+            alert("Map element not found. Cannot export PDF.");
+            setIsExporting(false);
+            return;
+        }
+
+        try {
+            const mapCanvas = await html2canvas(mapEl, { useCORS: true });
+            const mapImage = mapCanvas.toDataURL('image/png', 0.9);
+
+            const attractionImages: Record<string, string> = {};
+            document.querySelectorAll<HTMLImageElement>('.attraction-image').forEach(img => {
+                const name = img.dataset.attractionName;
+                if (name && img.src) {
+                    attractionImages[name] = img.src;
+                }
+            });
+
+            setPdfExportData({
+                itinerary,
+                mapImage,
+                attractionImages,
+            });
+        } catch (error) {
+            console.error("Error capturing content for PDF:", error);
+            alert("Could not capture page content for PDF export. Please try again.");
+            setIsExporting(false);
+        }
+    };
 
     const handleSave = () => {
         onSaveItinerary();
@@ -398,7 +494,6 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
             }
         };
 
-        // Use Web Share API if available
         if (navigator.share) {
             try {
                 await navigator.share({
@@ -406,7 +501,6 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                     text: summary,
                 });
             } catch (error) {
-                // Ignore AbortError which is triggered when user cancels the share dialog
                 if (error instanceof DOMException && error.name === 'AbortError') {
                      console.log('Share cancelled by user.');
                 } else {
@@ -415,7 +509,6 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                 }
             }
         } else {
-            // Fallback for browsers that don't support Web Share API
             await copyToClipboard();
         }
     };
@@ -454,8 +547,40 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                         <ShareIcon />
                         <span>{shareStatus === 'copied' ? 'Copied to Clipboard!' : 'Share Itinerary'}</span>
                     </button>
+                    <button
+                        onClick={handleExportPdf}
+                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
+                        aria-label="Export itinerary as PDF"
+                        disabled={isExporting}
+                    >
+                        {isExporting ? (
+                            <>
+                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Exporting...</span>
+                            </>
+                        ) : (
+                            <>
+                                <DownloadIcon />
+                                <span>Export as PDF</span>
+                            </>
+                        )}
+                    </button>
                 </div>
             </header>
+
+            {pdfExportData && (
+                <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+                     <PdfExportContent 
+                        ref={pdfContentRef}
+                        itinerary={pdfExportData.itinerary}
+                        mapImage={pdfExportData.mapImage}
+                        attractionImages={pdfExportData.attractionImages}
+                     />
+                </div>
+            )}
 
             {itinerary.startDate && itinerary.endDate && (
                 <FlightBookingCard 
