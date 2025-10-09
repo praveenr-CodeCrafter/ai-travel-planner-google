@@ -13,6 +13,7 @@ interface ItineraryDisplayProps {
     selectedActivity: { activity: Activity, day: number } | null;
     onActivitySelect: (activity: Activity | null, day?: number) => void;
     onSaveItinerary: () => void;
+    onShowToast: (message: string, type?: 'error' | 'success') => void;
 }
 
 const ActivityIcon = () => (
@@ -346,7 +347,7 @@ const FlightBookingCard: React.FC<{ destination: string, startDate: string, endD
 };
 
 
-const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selectedActivity, onActivitySelect, onSaveItinerary }) => {
+const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selectedActivity, onActivitySelect, onSaveItinerary, onShowToast }) => {
     const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
     const isAlreadySaved = 'id' in itinerary;
@@ -408,21 +409,21 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                 })
                 .catch(err => {
                     console.error("Error generating PDF:", err);
-                    alert("Sorry, there was an error creating the PDF. Please try again.");
+                    onShowToast("Sorry, there was an error creating the PDF. Please try again.", 'error');
                 })
                 .finally(() => {
                     setPdfExportData(null);
                     setIsExporting(false);
                 });
         }
-    }, [pdfExportData, itinerary.destination]);
+    }, [pdfExportData, itinerary.destination, onShowToast]);
 
     const handleExportPdf = async () => {
         setIsExporting(true);
 
         const mapEl = document.getElementById('map');
         if (!mapEl) {
-            alert("Map element not found. Cannot export PDF.");
+            onShowToast("Map element not found. Cannot export PDF.", 'error');
             setIsExporting(false);
             return;
         }
@@ -446,7 +447,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
             });
         } catch (error) {
             console.error("Error capturing content for PDF:", error);
-            alert("Could not capture page content for PDF export. Please try again.");
+            onShowToast("Could not capture page content for PDF export.", 'error');
             setIsExporting(false);
         }
     };
@@ -479,7 +480,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
 
         const copyToClipboard = async () => {
             if (!navigator.clipboard) {
-                alert('Automatic copying is not supported on your browser. Please copy the text manually from the console.');
+                onShowToast('Automatic copying not supported. Copied to console instead.', 'error');
                 console.info("--- Your Itinerary to Copy ---");
                 console.info(summary);
                 return;
@@ -487,10 +488,11 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
             try {
                 await navigator.clipboard.writeText(summary);
                 setShareStatus('copied');
+                onShowToast('Itinerary copied to clipboard!', 'success');
                 setTimeout(() => setShareStatus('idle'), 2500);
             } catch (copyError) {
                 console.error('Failed to copy itinerary:', copyError);
-                alert('Could not copy to clipboard. This feature may not be supported by your browser in this context (e.g., non-HTTPS page).');
+                onShowToast('Could not copy to clipboard. This feature may not be supported by your browser.', 'error');
             }
         };
 
@@ -545,7 +547,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                         disabled={shareStatus === 'copied'}
                     >
                         <ShareIcon />
-                        <span>{shareStatus === 'copied' ? 'Copied to Clipboard!' : 'Share Itinerary'}</span>
+                        <span>{shareStatus === 'copied' ? 'Copied!' : 'Share Itinerary'}</span>
                     </button>
                     <button
                         onClick={handleExportPdf}

@@ -68,6 +68,20 @@
         overflow: hidden;
     }
 
+    @keyframes toastIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    .animate-toast-in {
+        animation: toastIn 0.5s ease-out forwards;
+    }
+
     /* Marker Animations */
     @keyframes markerPopIn {
         from {

@@ -6,11 +6,12 @@ import TravelForm from './components/TravelForm';
 import ItineraryDisplay from './components/ItineraryDisplay';
 import LoadingSpinner from './components/LoadingSpinner';
 import SavedItineraries from './components/SavedItineraries';
+import Toast from './components/Toast';
 
 const App: React.FC = () => {
     const [itinerary, setItinerary] = useState<Itinerary | SavedItinerary | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
     const [selectedActivity, setSelectedActivity] = useState<{ activity: Activity, day: number } | null>(null);
     const [savedItineraries, setSavedItineraries] = useState<SavedItinerary[]>([]);
 
@@ -49,9 +50,12 @@ const App: React.FC = () => {
         }
     }, []);
 
+    const showToast = (message: string, type: 'error' | 'success' = 'error') => {
+        setToast({ message, type });
+    };
+
     const handleGenerateItinerary = useCallback(async (preferences: TravelPreferences) => {
         setIsLoading(true);
-        setError(null);
         setItinerary(null);
         setSelectedActivity(null);
 
@@ -60,7 +64,7 @@ const App: React.FC = () => {
             setItinerary(result);
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-            setError(errorMessage);
+            showToast(errorMessage, 'error');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -83,9 +87,10 @@ const App: React.FC = () => {
         setSavedItineraries(updatedSavedItineraries);
         try {
             localStorage.setItem('saved-travel-itineraries', JSON.stringify(updatedSavedItineraries));
+            showToast('Itinerary saved successfully!', 'success');
         } catch (error) {
             console.error("Failed to save itinerary to localStorage:", error);
-            setError("Could not save itinerary. Your browser's storage might be full.");
+            showToast("Could not save itinerary. Your browser's storage might be full.", 'error');
         }
     }, [itinerary, savedItineraries]);
 
@@ -93,7 +98,6 @@ const App: React.FC = () => {
         const itineraryToLoad = savedItineraries.find(it => it.id === id);
         if (itineraryToLoad) {
             setItinerary(itineraryToLoad);
-            setError(null);
             setIsLoading(false);
             setSelectedActivity(null);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -105,14 +109,17 @@ const App: React.FC = () => {
         setSavedItineraries(updatedSavedItineraries);
         try {
             localStorage.setItem('saved-travel-itineraries', JSON.stringify(updatedSavedItineraries));
+            showToast('Itinerary deleted.', 'success');
         } catch (error) {
             console.error("Failed to update localStorage after deletion:", error);
+            showToast('Could not update saved itineraries.', 'error');
         }
     }, [savedItineraries]);
 
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] dark:bg-[var(--dark-bg-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] font-sans p-4 sm:p-6 lg:p-8 transition-colors duration-300">
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             <div className="max-w-7xl mx-auto">
                 <Header />
                 <main>
@@ -122,14 +129,7 @@ const App: React.FC = () => {
                         onDelete={handleDeleteItinerary}
                     />
 
-                    <TravelForm onGenerate={handleGenerateItinerary} isLoading={isLoading} />
-                    
-                    {error && (
-                        <div className="mt-8 p-4 bg-[var(--color-error-bg)] dark:bg-[var(--dark-color-error-bg)] border border-red-400 dark:border-red-600 text-[var(--color-error)] dark:text-[var(--dark-color-error)] rounded-lg shadow-md text-center">
-                            <h3 className="font-bold">An Error Occurred</h3>
-                            <p>{error}</p>
-                        </div>
-                    )}
+                    <TravelForm onGenerate={handleGenerateItinerary} isLoading={isLoading} onShowToast={showToast} />
 
                     {isLoading && (
                         <div className="mt-8">
@@ -144,6 +144,7 @@ const App: React.FC = () => {
                                 selectedActivity={selectedActivity}
                                 onActivitySelect={handleActivitySelect}
                                 onSaveItinerary={handleSaveItinerary}
+                                onShowToast={showToast}
                             />
                         </div>
                     )}

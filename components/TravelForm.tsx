@@ -5,6 +5,7 @@ import { INTERESTS_OPTIONS, CURRENCY_OPTIONS, COUNTRIES } from '../types';
 interface TravelFormProps {
     onGenerate: (preferences: TravelPreferences) => void;
     isLoading: boolean;
+    onShowToast: (message: string, type?: 'error' | 'success') => void;
 }
 
 const CheckIcon: React.FC = () => (
@@ -13,7 +14,7 @@ const CheckIcon: React.FC = () => (
     </svg>
 );
 
-const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
+const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowToast }) => {
     const today = new Date().toISOString().split('T')[0];
     
     const [duration, setDuration] = useState<number>(7);
@@ -28,7 +29,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
         interests: ['Sightseeing'],
     });
     
-    const [error, setError] = useState<string | null>(null);
     const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const destinationRef = useRef<HTMLDivElement>(null);
@@ -137,27 +137,26 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
         e.preventDefault();
         setShowSuggestions(false);
         if (!preferences.destination.trim()) {
-            setError("Please enter a destination.");
+            onShowToast("Please enter a destination.", 'error');
             return;
         }
 
         const budgetValue = parseFloat(preferences.budget);
         if (isNaN(budgetValue) || budgetValue < 100) {
-            setError(`Budget must be a valid number of at least ${selectedCurrency?.symbol ?? ''}100.`);
+            onShowToast(`Budget must be a valid number of at least ${selectedCurrency?.symbol ?? ''}100.`, 'error');
             return;
         }
         
         if (duration < 1) {
-            setError("Trip duration must be at least 1.");
+            onShowToast("Trip duration must be at least 1.", 'error');
             return;
         }
         
         const finalInterests = preferences.interests.filter(i => i.trim() !== '');
         if (finalInterests.length === 0) {
-            setError("Please select at least one interest.");
+            onShowToast("Please select at least one interest.", 'error');
             return;
         }
-        setError(null);
         onGenerate({...preferences, interests: finalInterests});
     };
 
@@ -280,8 +279,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading }) => {
                     )}
                 </div>
                 
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-
                 {/* Action Buttons */}
                 <div className="pt-2">
                     <button type="submit" disabled={isLoading}
