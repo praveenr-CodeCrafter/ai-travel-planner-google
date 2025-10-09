@@ -192,7 +192,18 @@ export const getAttractionDetails = async (attractionName: string, destination: 
 };
 
 export const generateImageForAttraction = async (attractionName: string, destination: string): Promise<string> => {
-    const prompt = `Vibrant, photorealistic travel photograph of ${attractionName}, ${destination}. Show the landmark clearly in a beautiful, scenic context. No people in the foreground.`;
+    const photoStyles = [
+        "golden hour light, cinematic, professional travel photography",
+        "wide-angle lens perspective, capturing the expansive view with leading lines",
+        "vibrant, saturated colors under a clear blue sky, high contrast",
+        "moody atmosphere on a misty morning, cinematic lighting",
+        "focusing on intricate architectural details with sharp focus and textured surfaces",
+    ];
+
+    const randomStyle = photoStyles[Math.floor(Math.random() * photoStyles.length)];
+
+    const prompt = `Vibrant, photorealistic travel photograph of ${attractionName}, ${destination}. Show the landmark clearly in a beautiful, scenic context. No people in the foreground. Style: ${randomStyle}.`;
+    
     try {
         const response = await ai.models.generateImages({
             model: 'imagen-4.0-generate-001',
