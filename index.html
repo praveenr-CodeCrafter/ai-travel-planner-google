@@ -68,19 +68,44 @@
         overflow: hidden;
     }
 
+    /* Toast Animations */
     @keyframes toastIn {
         from {
-            transform: translateX(100%);
+            transform: translateX(calc(100% + 1.5rem)) scale(0.9);
             opacity: 0;
         }
         to {
-            transform: translateX(0);
+            transform: translateX(0) scale(1);
             opacity: 1;
         }
     }
     .animate-toast-in {
-        animation: toastIn 0.5s ease-out forwards;
+        /* A little bounce effect */
+        animation: toastIn 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
     }
+
+    @keyframes toastOut {
+        from {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(calc(100% + 1.5rem)) scale(0.9);
+            opacity: 0;
+        }
+    }
+    .animate-toast-out {
+        animation: toastOut 0.4s ease-in forwards;
+    }
+
+    @keyframes progress {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+    .animate-progress {
+        animation: progress linear forwards;
+    }
+
 
     /* Marker Animations */
     @keyframes markerPopIn {
