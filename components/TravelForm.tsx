@@ -14,6 +14,157 @@ const CheckIcon: React.FC = () => (
     </svg>
 );
 
+const CalendarIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+);
+
+// --- Custom DatePicker Component ---
+interface DatePickerProps {
+    selectedDate: string;
+    endDate: string;
+    onChange: (date: string) => void;
+    minDate: string;
+}
+
+const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange, minDate }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [viewDate, setViewDate] = useState(new Date(selectedDate + 'T00:00:00'));
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+    
+    useEffect(() => {
+        // When selectedDate prop changes, update the calendar view
+        const newDate = new Date(selectedDate + 'T00:00:00');
+        if (!isNaN(newDate.getTime())) {
+            setViewDate(newDate);
+        }
+    }, [selectedDate]);
+
+    const handleMonthChange = (offset: number) => {
+        setViewDate(prev => {
+            const newDate = new Date(prev);
+            newDate.setMonth(newDate.getMonth() + offset);
+            return newDate;
+        });
+    };
+
+    const handleDateClick = (day: Date) => {
+        onChange(day.toISOString().split('T')[0]);
+        setIsOpen(false);
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString + 'T00:00:00').toLocaleDateString(undefined, {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+    };
+
+    const renderCalendar = () => {
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        const minDateTime = new Date(minDate + 'T00:00:00').getTime();
+        const selectedDateTime = new Date(selectedDate + 'T00:00:00').getTime();
+        const endDateTime = new Date(endDate + 'T00:00:00').getTime();
+        
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const todayTime = today.getTime();
+        
+        const days = [];
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            days.push(<div key={`prev-${i}`} className="p-1"></div>);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const currentDate = new Date(year, month, i);
+            const currentTime = currentDate.getTime();
+            const isDisabled = currentTime < minDateTime;
+            const isSelected = currentTime === selectedDateTime;
+            const isEndDate = currentTime === endDateTime;
+            const isInRange = currentTime > selectedDateTime && currentTime < endDateTime;
+            const isToday = currentTime === todayTime;
+
+            const baseClasses = "w-9 h-9 flex items-center justify-center rounded-full text-sm transition-colors";
+            let dayClasses = isDisabled ? "text-gray-400 dark:text-gray-600 cursor-not-allowed" : "cursor-pointer";
+
+            if (isSelected || isEndDate) {
+                dayClasses += ` bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold`;
+            } else if (isInRange) {
+                dayClasses += ` bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]`;
+            } else if (!isDisabled) {
+                dayClasses += " text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)]";
+            }
+            if (isToday && !isSelected && !isEndDate) {
+                 dayClasses += " border border-[var(--color-primary)] dark:border-[var(--dark-color-primary)]";
+            }
+
+            days.push(
+                <div key={i} className="p-1">
+                    <button
+                        type="button"
+                        onClick={() => !isDisabled && handleDateClick(currentDate)}
+                        disabled={isDisabled}
+                        className={`${baseClasses} ${dayClasses}`}
+                    >
+                        {i}
+                    </button>
+                </div>
+            );
+        }
+
+        return days;
+    };
+
+    return (
+        <div className="relative" ref={wrapperRef}>
+            <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <CalendarIcon />
+                </div>
+                <input
+                    type="text"
+                    readOnly
+                    value={formatDate(selectedDate)}
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] cursor-pointer"
+                />
+            </div>
+            {isOpen && (
+                <div className="absolute z-10 mt-2 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-xl p-4 animate-calendar-in">
+                    <div className="flex justify-between items-center mb-2">
+                        <button type="button" onClick={() => handleMonthChange(-1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)]">&lt;</button>
+                        <span className="font-semibold text-sm text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
+                            {viewDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                        </span>
+                        <button type="button" onClick={() => handleMonthChange(1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)]">&gt;</button>
+                    </div>
+                    <div className="grid grid-cols-7 text-center text-xs text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}
+                    </div>
+                    <div className="grid grid-cols-7">
+                        {renderCalendar()}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+// --- End Custom DatePicker Component ---
+
 const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowToast }) => {
     const today = new Date().toISOString().split('T')[0];
     
@@ -37,10 +188,10 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
     const [otherInterest, setOtherInterest] = useState('');
     
     useEffect(() => {
-        const startDateObj = new Date(preferences.startDate);
+        const startDateObj = new Date(preferences.startDate + 'T00:00:00');
         if (isNaN(startDateObj.getTime())) return;
 
-        const daysToAdd = durationUnit === 'weeks' ? duration * 7 : duration;
+        const daysToAdd = durationUnit === 'weeks' ? duration * 7 - 1 : duration - 1;
         
         const endDateObj = new Date(startDateObj);
         endDateObj.setDate(endDateObj.getDate() + daysToAdd);
@@ -207,8 +358,12 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label htmlFor="startDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Start Date</label>
-                        <input type="date" name="startDate" id="startDate" value={preferences.startDate} onChange={handleChange} min={today}
-                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]" />
+                        <DatePicker
+                            selectedDate={preferences.startDate}
+                            endDate={preferences.endDate}
+                            onChange={(date) => setPreferences(prev => ({...prev, startDate: date}))}
+                            minDate={today}
+                        />
                     </div>
                      <div>
                         <label htmlFor="duration" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Trip Duration</label>
