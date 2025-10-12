@@ -144,7 +144,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
                 />
             </div>
             {isOpen && (
-                <div className="absolute z-10 mt-2 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-xl p-4 animate-calendar-in">
+                <div className="absolute z-10 mt-2 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-xl p-4 animate-calendar-in">
                     <div className="flex justify-between items-center mb-2">
                         <button type="button" onClick={() => handleMonthChange(-1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)]">&lt;</button>
                         <span className="font-semibold text-sm text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
