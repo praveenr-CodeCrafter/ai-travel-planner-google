@@ -156,6 +156,29 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
     }
 };
 
+export const validateDestination = async (destination: string): Promise<boolean> => {
+    const prompt = `Is "${destination}" a real, well-known city, region, or country that a person can travel to? Respond with only "yes" or "no".`;
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                maxOutputTokens: 5,
+                temperature: 0,
+                thinkingConfig: { thinkingBudget: 0 }
+            }
+        });
+
+        const resultText = response.text.trim().toLowerCase();
+        return resultText.startsWith('yes');
+    } catch (error) {
+        console.error("Error validating destination:", error);
+        // Fail open: assume it's valid if the check fails to avoid blocking users due to API issues.
+        return true; 
+    }
+};
+
 export const getAttractionDetails = async (attractionName: string, destination: string): Promise<{ description: string; sources: Array<{uri: string, title: string}> }> => {
     const prompt = `Provide a concise, one-paragraph summary for the attraction "${attractionName}" located in ${destination}.`;
 

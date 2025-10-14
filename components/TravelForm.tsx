@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { TravelPreferences } from '../types';
 import { INTERESTS_OPTIONS, CURRENCY_OPTIONS, COUNTRIES } from '../types';
+import { validateDestination } from '../services/geminiService';
 
 interface TravelFormProps {
     onGenerate: (preferences: TravelPreferences) => void;
@@ -170,6 +171,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
     
     const [duration, setDuration] = useState<number>(7);
     const [durationUnit, setDurationUnit] = useState<'days' | 'weeks'>('days');
+    const [isValidating, setIsValidating] = useState(false);
 
     const [preferences, setPreferences] = useState<TravelPreferences>({
         destination: '',
@@ -284,7 +286,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
 
     const selectedCurrency = CURRENCY_OPTIONS.find(c => c.code === preferences.currency);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setShowSuggestions(false);
         if (!preferences.destination.trim()) {
@@ -308,6 +310,21 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
             onShowToast("Please select at least one interest.", 'error');
             return;
         }
+
+        setIsValidating(true);
+        try {
+            const isDestinationValid = await validateDestination(preferences.destination);
+            if (!isDestinationValid) {
+                onShowToast("Please enter a valid travel destination (e.g., a city, region, or country).", 'error');
+                return;
+            }
+        } catch (error) {
+            // Log error but proceed (fail-open)
+            console.error("Destination validation failed:", error);
+        } finally {
+            setIsValidating(false);
+        }
+
         onGenerate({...preferences, interests: finalInterests});
     };
 
@@ -436,15 +453,15 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                 
                 {/* Action Buttons */}
                 <div className="pt-2">
-                    <button type="submit" disabled={isLoading}
+                    <button type="submit" disabled={isLoading || isValidating}
                             className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600">
-                        {isLoading ? (
+                        {isLoading || isValidating ? (
                            <>
                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Generating...
+                            {isLoading ? 'Generating...' : 'Validating...'}
                            </>
                         ) : 'Generate Itinerary'}
                     </button>
