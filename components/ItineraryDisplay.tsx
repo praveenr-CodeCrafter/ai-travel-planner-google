@@ -209,6 +209,9 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                     </div>
                                     {isSelected && (
                                         <div className="w-full pl-8 mt-3 animate-details-in space-y-3">
+                                            <div className="h-48 w-full overflow-hidden rounded-lg relative my-2 shadow-inner">
+                                                <GeneratedImage attractionName={activity.attractionName} destination={destination} />
+                                            </div>
                                             <div className="p-3 bg-green-50/50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 text-sm space-y-2">
                                                 {activity.estimatedDuration && (
                                                     <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
