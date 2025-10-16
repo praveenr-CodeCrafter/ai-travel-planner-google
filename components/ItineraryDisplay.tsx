@@ -359,6 +359,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState('');
     const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false);
+    const [openTipIndex, setOpenTipIndex] = useState<number | null>(0);
 
     const [isExporting, setIsExporting] = useState(false);
     const [pdfExportData, setPdfExportData] = useState<{
@@ -368,12 +369,23 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
     } | null>(null);
     const pdfContentRef = useRef<HTMLDivElement>(null);
 
+    const handleTipToggle = (index: number) => {
+        setOpenTipIndex(openTipIndex === index ? null : index);
+    };
+
+    const ChevronDownIcon = ({ isOpen }: { isOpen: boolean }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 flex-shrink-0 text-gray-400 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+    );
+
     useEffect(() => {
         setSaveStatus('idle');
         setRating(0);
         setHoverRating(0);
         setComment('');
         setIsFeedbackSubmitted(false);
+        setOpenTipIndex(0);
     }, [itinerary]);
     
     useEffect(() => {
@@ -604,46 +616,75 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
             </div>
 
             {itinerary.packingList && itinerary.packingList.length > 0 && (
-                <div 
+                <div
                     className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in"
                     style={{ animationDelay: `${itinerary.dailyPlans.length * 100}ms` }}
                 >
                     <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3"><PackingListIcon />Packing List</h3>
-                    <ul className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {itinerary.packingList.map((item, index) => (
-                           <li key={index} className="flex items-start">
-                               <div className="flex-shrink-0 h-6 w-6 text-[var(--color-primary)] mr-3">
-                                    <CheckCircleIcon />
+                           <div 
+                               key={index} 
+                               className="bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] p-4 rounded-lg flex items-start gap-3 transition-transform duration-200 hover:scale-105 hover:shadow-lg border border-transparent hover:border-[var(--border-color)] dark:hover:border-[var(--dark-border-color)] opacity-0 animate-fade-in"
+                               style={{ animationDelay: `${index * 75}ms` }}
+                            >
+                               <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center mt-0.5 shadow">
+                                    <svg className="h-5 w-5 text-[var(--color-primary-text)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
                                </div>
                                <div>
                                    <h4 className="font-semibold text-md text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{item.item}</h4>
-                                   <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1 text-sm">{item.reason}</p>
+                                   <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] text-sm">{item.reason}</p>
                                </div>
-                           </li>
+                           </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             )}
             
-            <div 
-              className="bg-[var(--color-primary-light)] dark:bg-gray-800/60 p-8 rounded-xl shadow-lg border-l-4 border-[var(--color-primary)] dark:border-[var(--dark-color-primary)] opacity-0 animate-scale-in"
-              style={{ animationDelay: `${itinerary.dailyPlans.length * 100 + 150}ms` }}
-            >
-                <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3"><TipsIcon />Travel Tips</h3>
-                <ul className="space-y-5">
-                    {itinerary.travelTips.map((tip, index) => (
-                       <li key={index} className="flex items-start">
-                           <div className="flex-shrink-0 h-6 w-6 text-[var(--color-primary)] mr-3">
-                                <CheckCircleIcon />
-                           </div>
-                           <div>
-                               <h4 className="font-semibold text-md text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{tip.tip}</h4>
-                               <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1 text-sm">{tip.explanation}</p>
-                           </div>
-                       </li>
-                    ))}
-                </ul>
-            </div>
+            {itinerary.travelTips && itinerary.travelTips.length > 0 && (
+                <div 
+                  className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in"
+                  style={{ animationDelay: `${itinerary.dailyPlans.length * 100 + 150}ms` }}
+                >
+                    <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3"><TipsIcon />Travel Tips</h3>
+                    <div className="space-y-3">
+                        {itinerary.travelTips.map((tip, index) => {
+                           const isOpen = openTipIndex === index;
+                           return (
+                             <div key={index} className="border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg overflow-hidden transition-shadow duration-200 hover:shadow-md animate-fade-in" style={{animationDelay: `${index * 75}ms`, opacity: 0}}>
+                               <h4 id={`tip-header-${index}`}>
+                                 <button
+                                   type="button"
+                                   className="flex justify-between items-center w-full p-4 font-semibold text-left text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)]/50 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors"
+                                   onClick={() => handleTipToggle(index)}
+                                   aria-expanded={isOpen}
+                                   aria-controls={`tip-content-${index}`}
+                                 >
+                                   <span className="pr-4">{tip.tip}</span>
+                                   <ChevronDownIcon isOpen={isOpen} />
+                                 </button>
+                               </h4>
+                               <div
+                                  id={`tip-content-${index}`}
+                                  role="region"
+                                  aria-labelledby={`tip-header-${index}`}
+                                  className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                               >
+                                 <div className="overflow-hidden">
+                                    <div className="p-4 border-t border-[var(--border-color)] dark:border-[var(--dark-border-color)] bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] text-sm">
+                                      {tip.explanation}
+                                    </div>
+                                 </div>
+                               </div>
+                             </div>
+                           );
+                        })}
+                    </div>
+                </div>
+            )}
+
 
             {/* User Feedback Section */}
             <div
