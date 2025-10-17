@@ -657,7 +657,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                <h4 id={`tip-header-${index}`}>
                                  <button
                                    type="button"
-                                   className="flex justify-between items-center w-full p-4 font-semibold text-left text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)]/50 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors"
+                                   className="flex justify-between items-center w-full p-4 font-semibold text-left text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] bg-gray-100/50 dark:bg-slate-700 hover:bg-gray-200/60 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors"
                                    onClick={() => handleTipToggle(index)}
                                    aria-expanded={isOpen}
                                    aria-controls={`tip-content-${index}`}
@@ -673,7 +673,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                   className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
                                >
                                  <div className="overflow-hidden">
-                                    <div className="p-4 border-t border-[var(--border-color)] dark:border-[var(--dark-border-color)] bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] text-sm">
+                                    <div className="p-4 border-t border-[var(--border-color)] dark:border-[var(--dark-border-color)] bg-[var(--bg-secondary)] dark:bg-slate-800 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] text-sm">
                                       {tip.explanation}
                                     </div>
                                  </div>
