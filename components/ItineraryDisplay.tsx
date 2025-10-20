@@ -40,9 +40,11 @@ const TipsIcon = () => (
     </svg>
 );
 
-const CheckCircleIcon = () => (
-    <svg className="h-10 w-10 text-[var(--color-primary)] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+const AnimatedCheckCircleIcon = () => (
+    <svg className="h-20 w-20 text-[var(--color-primary)] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="12" cy="12" r="11" stroke="currentColor" strokeOpacity="0.2" />
+        <circle cx="12" cy="12" r="11" className="animate-draw-circle" transform="rotate(-90 12 12)" />
+        <path className="animate-draw-check" strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15L15 9.75" />
     </svg>
 );
 
@@ -115,13 +117,13 @@ const PlaneIcon = () => (
 );
 
 const FeedbackIcon = () => (
-    <svg className="h-8 w-8 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <svg className="h-12 w-12 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M10.05 4.575a1.575 1.575 0 10-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 013.15 0v1.5m-3.15 0l.075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 013.15 0V15M6.9 7.575a1.575 1.575 0 10-3.15 0v8.175a6.75 6.75 0 006.75 6.75h2.018a5.25 5.25 0 005.25-5.25v-2.909m-16.5 0a1.575 1.575 0 10-3.15 0v2.909a5.25 5.25 0 005.25 5.25h5.382" />
     </svg>
 );
 
 const RatingStarIcon = ({ filled }: { filled: boolean }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 cursor-pointer transition-colors ${filled ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-300'}`} viewBox="0 0 20 20" fill="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 cursor-pointer transition-all duration-200 ${filled ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-300'}`} viewBox="0 0 20 20" fill="currentColor">
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
     </svg>
 );
@@ -688,27 +690,30 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
 
             {/* User Feedback Section */}
             <div
-                className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in"
+                className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-muted)] dark:from-[var(--dark-bg-secondary)] dark:to-[var(--dark-bg-primary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in"
                 style={{ animationDelay: `${itinerary.dailyPlans.length * 100 + 300}ms` }}
             >
                 {isFeedbackSubmitted ? (
-                    <div className="text-center py-8">
-                        <CheckCircleIcon />
-                        <h3 className="text-2xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mt-4">Thank you for your feedback!</h3>
-                        <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1">We appreciate you helping us improve.</p>
+                    <div className="text-center py-8 animate-scale-in">
+                        <AnimatedCheckCircleIcon />
+                        <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] mt-4">Thank you for your feedback!</h3>
+                        <p className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-2 text-lg">We appreciate you helping us improve.</p>
                     </div>
                 ) : (
-                    <>
-                        <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6 flex items-center gap-3">
-                            <FeedbackIcon />
+                    <div className="flex flex-col items-center text-center">
+                        <FeedbackIcon />
+                        <h3 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] mt-4">
                             Rate This Itinerary
                         </h3>
-                        <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+                         <p className="mt-2 text-lg text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] max-w-2xl">
+                            Your feedback is valuable. Let us know how we did so we can make our AI travel plans even better.
+                        </p>
+                        <form onSubmit={handleFeedbackSubmit} className="space-y-6 mt-8 w-full max-w-lg text-left">
                             <div>
-                                <label className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2 text-center">
                                     Overall Rating
                                 </label>
-                                <div className="flex items-center space-x-1" onMouseLeave={() => setHoverRating(0)}>
+                                <div className="flex items-center justify-center space-x-2" onMouseLeave={() => setHoverRating(0)}>
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button
                                             key={star}
@@ -716,7 +721,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                             onMouseEnter={() => setHoverRating(star)}
                                             onClick={() => setRating(star)}
                                             aria-label={`Rate ${star} stars`}
-                                            className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 rounded-full"
+                                            className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 rounded-full transition-transform duration-200 hover:scale-110"
                                         >
                                             <RatingStarIcon filled={star <= (hoverRating || rating)} />
                                         </button>
@@ -740,12 +745,12 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                             <button
                                 type="submit"
                                 disabled={rating === 0}
-                                className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600"
+                                className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600 transform hover:-translate-y-1 transition-all duration-200"
                             >
                                 Submit Feedback
                             </button>
                         </form>
-                    </>
+                    </div>
                 )}
             </div>
         </div>

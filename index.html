@@ -147,6 +147,26 @@
         transform-origin: bottom center;
     }
 
+    /* Animated Checkmark */
+    @keyframes draw-circle {
+      from { stroke-dashoffset: 69; } /* circumference of circle with r=11 */
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes draw-check {
+      from { stroke-dashoffset: 18; } /* length of check path */
+      to { stroke-dashoffset: 0; }
+    }
+    .animate-draw-circle {
+      stroke-dasharray: 69;
+      stroke-dashoffset: 69;
+      animation: draw-circle 0.5s ease-out forwards;
+    }
+    .animate-draw-check {
+      stroke-dasharray: 18;
+      stroke-dashoffset: 18;
+      animation: draw-check 0.4s ease-out 0.5s forwards; /* Start after circle */
+    }
+
     .leaflet-container {
         height: 450px;
         width: 100%;
