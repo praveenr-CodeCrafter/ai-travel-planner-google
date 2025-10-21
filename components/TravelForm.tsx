@@ -21,6 +21,19 @@ const CalendarIcon: React.FC = () => (
     </svg>
 );
 
+// --- New DatePicker Icons ---
+const ChevronLeftIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+);
+const ChevronRightIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7-7" />
+    </svg>
+);
+
+
 // --- Custom DatePicker Component ---
 interface DatePickerProps {
     selectedDate: string;
@@ -87,7 +100,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
         
         const days = [];
         for (let i = 0; i < firstDayOfMonth; i++) {
-            days.push(<div key={`prev-${i}`} className="p-1"></div>);
+            days.push(<div key={`prev-${i}`}></div>);
         }
 
         for (let i = 1; i <= daysInMonth; i++) {
@@ -99,27 +112,50 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
             const isInRange = currentTime > selectedDateTime && currentTime < endDateTime;
             const isToday = currentTime === todayTime;
 
-            const baseClasses = "w-9 h-9 flex items-center justify-center rounded-full text-sm transition-colors";
-            let dayClasses = isDisabled ? "text-gray-400 dark:text-gray-600 cursor-not-allowed" : "cursor-pointer";
-
-            if (isSelected || isEndDate) {
-                dayClasses += ` bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold`;
-            } else if (isInRange) {
-                dayClasses += ` bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]`;
-            } else if (!isDisabled) {
-                dayClasses += " text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)]";
+            const baseButtonClasses = "w-9 h-9 flex items-center justify-center text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 focus:ring-[var(--color-primary)]";
+            let buttonClasses = isDisabled ? "text-gray-400 dark:text-gray-500 cursor-not-allowed" : "cursor-pointer";
+            let containerClasses = "";
+    
+            // Base button shape
+            if (isInRange) {
+                buttonClasses += ' rounded-none';
+            } else {
+                buttonClasses += ' rounded-full';
             }
+    
+            // Background and text color
+            if (isSelected || isEndDate) {
+                buttonClasses += ` bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold transform scale-105 shadow`;
+            } else if (isInRange) {
+                buttonClasses += ` bg-transparent text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700/50`;
+            } else if (!isDisabled) {
+                buttonClasses += " text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700/50";
+            }
+    
+            // Today's date indicator
             if (isToday && !isSelected && !isEndDate) {
-                 dayClasses += " border border-[var(--color-primary)] dark:border-[var(--dark-color-primary)]";
+                 buttonClasses += " ring-1 ring-inset ring-[var(--color-primary)] dark:ring-[var(--dark-color-primary)]";
+            }
+    
+            // Container for range background
+            if (!isDisabled && (isSelected || isEndDate || isInRange)) {
+                containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)]";
+                if (isSelected && isEndDate) {
+                    containerClasses += " rounded-full";
+                } else if (isSelected) {
+                    containerClasses += " rounded-l-full";
+                } else if (isEndDate) {
+                    containerClasses += " rounded-r-full";
+                }
             }
 
             days.push(
-                <div key={i} className="p-1">
+                <div key={i} className={containerClasses}>
                     <button
                         type="button"
                         onClick={() => !isDisabled && handleDateClick(currentDate)}
                         disabled={isDisabled}
-                        className={`${baseClasses} ${dayClasses}`}
+                        className={`${baseButtonClasses} ${buttonClasses}`}
                     >
                         {i}
                     </button>
@@ -145,18 +181,18 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
                 />
             </div>
             {isOpen && (
-                <div className="absolute z-10 mt-2 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-xl p-4 animate-calendar-in">
-                    <div className="flex justify-between items-center mb-2">
-                        <button type="button" onClick={() => handleMonthChange(-1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)]">&lt;</button>
+                <div className="absolute z-10 mt-2 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-xl shadow-xl p-3 animate-calendar-in">
+                    <div className="flex justify-between items-center mb-3 px-1">
+                        <button type="button" onClick={() => handleMonthChange(-1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]"><ChevronLeftIcon /></button>
                         <span className="font-semibold text-sm text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
                             {viewDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                         </span>
-                        <button type="button" onClick={() => handleMonthChange(1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)]">&gt;</button>
+                        <button type="button" onClick={() => handleMonthChange(1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]"><ChevronRightIcon /></button>
                     </div>
-                    <div className="grid grid-cols-7 text-center text-xs text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">
+                    <div className="grid grid-cols-7 text-center text-xs text-gray-400 dark:text-gray-500 mb-2">
                         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}
                     </div>
-                    <div className="grid grid-cols-7">
+                    <div className="grid grid-cols-7 gap-y-1">
                         {renderCalendar()}
                     </div>
                 </div>
