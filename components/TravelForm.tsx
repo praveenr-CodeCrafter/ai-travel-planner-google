@@ -43,10 +43,10 @@ interface DatePickerProps {
     rangeEnd: string;
 }
 
-
 const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, rangeStart, rangeEnd }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [viewDate, setViewDate] = useState(new Date(value + 'T00:00:00'));
+    const initialDate = new Date(value + 'T00:00:00');
+    const [viewDate, setViewDate] = useState(isNaN(initialDate.getTime()) ? new Date() : initialDate);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -60,7 +60,6 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
     }, []);
     
     useEffect(() => {
-        // When value prop changes, update the calendar view
         const newDate = new Date(value + 'T00:00:00');
         if (!isNaN(newDate.getTime())) {
             setViewDate(newDate);
@@ -81,6 +80,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
     };
 
     const formatDate = (dateString: string) => {
+        if (!dateString) return "Select a date";
         return new Date(dateString + 'T00:00:00').toLocaleDateString(undefined, {
             year: 'numeric', month: 'long', day: 'numeric'
         });
@@ -93,11 +93,11 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
         const minDateTime = new Date(minDate + 'T00:00:00').getTime();
-        const startDateTime = new Date(rangeStart + 'T00:00:00').getTime();
-        const endDateTime = new Date(rangeEnd + 'T00:00:00').getTime();
+        const startDateTime = rangeStart ? new Date(rangeStart + 'T00:00:00').getTime() : NaN;
+        const endDateTime = rangeEnd ? new Date(rangeEnd + 'T00:00:00').getTime() : NaN;
         
         const today = new Date();
-        today.setHours(0,0,0,0);
+        today.setHours(0, 0, 0, 0);
         const todayTime = today.getTime();
         
         const days = [];
@@ -114,41 +114,31 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
             const isEndDate = currentTime === endDateTime;
             const isInRange = currentTime > startDateTime && currentTime < endDateTime;
             const isToday = currentTime === todayTime;
+            const isSingleDaySelection = startDateTime === endDateTime;
 
-            const baseButtonClasses = "w-9 h-9 flex items-center justify-center text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 focus:ring-[var(--color-primary)]";
-            let buttonClasses = isDisabled ? "text-gray-400 dark:text-gray-500 cursor-not-allowed" : "cursor-pointer";
-            let containerClasses = "";
-    
-            // Base button shape
-            if (isInRange) {
-                buttonClasses += ' rounded-none';
+            let containerClasses = "flex items-center justify-center h-10";
+            let dayClasses = "w-10 h-10 flex items-center justify-center text-sm transition-colors duration-150 ease-in-out rounded-full";
+
+            if (isDisabled) {
+                dayClasses += " text-gray-300 dark:text-gray-600 cursor-not-allowed";
             } else {
-                buttonClasses += ' rounded-full';
-            }
-    
-            // Background and text color
-            if (isStartDate || isEndDate) {
-                buttonClasses += ` bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold transform scale-105 shadow`;
-            } else if (isInRange) {
-                buttonClasses += ` bg-transparent text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700/50`;
-            } else if (!isDisabled) {
-                buttonClasses += " text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700/50";
-            }
-    
-            // Today's date indicator
-            if (isToday && !isStartDate && !isEndDate) {
-                 buttonClasses += " ring-1 ring-inset ring-[var(--color-primary)] dark:ring-[var(--dark-color-primary)]";
-            }
-    
-            // Container for range background
-            if (!isDisabled && (isStartDate || isEndDate || isInRange)) {
-                containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)]";
-                if (isStartDate && isEndDate) {
-                    containerClasses += " rounded-full";
-                } else if (isStartDate) {
-                    containerClasses += " rounded-l-full";
-                } else if (isEndDate) {
-                    containerClasses += " rounded-r-full";
+                dayClasses += " cursor-pointer";
+
+                if (isStartDate || isEndDate) {
+                    dayClasses += " bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold shadow-md";
+                    if (!isSingleDaySelection) {
+                        containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)]";
+                        if (isStartDate) containerClasses += " rounded-l-full";
+                        if (isEndDate) containerClasses += " rounded-r-full";
+                    }
+                } else if (isInRange) {
+                    containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)]";
+                    dayClasses += " text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] rounded-none w-full hover:bg-green-200/60 dark:hover:bg-gray-600/50";
+                } else {
+                    dayClasses += " text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700/50";
+                    if (isToday) {
+                        dayClasses += " ring-1 ring-inset ring-[var(--color-primary)]/70 dark:ring-[var(--dark-color-primary)]/70";
+                    }
                 }
             }
 
@@ -158,7 +148,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
                         type="button"
                         onClick={() => !isDisabled && handleDateClick(currentDate)}
                         disabled={isDisabled}
-                        className={`${baseButtonClasses} ${buttonClasses}`}
+                        className={dayClasses}
+                        aria-pressed={isStartDate || isEndDate || isInRange}
                     >
                         {i}
                     </button>
@@ -184,18 +175,18 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
                 />
             </div>
             {isOpen && (
-                <div className="absolute z-10 mt-2 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-xl shadow-xl p-3 animate-calendar-in">
-                    <div className="flex justify-between items-center mb-3 px-1">
-                        <button type="button" onClick={() => handleMonthChange(-1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]"><ChevronLeftIcon /></button>
-                        <span className="font-semibold text-sm text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
+                <div className="absolute z-20 mt-2 w-72 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-xl shadow-2xl p-4 animate-calendar-in">
+                    <div className="flex justify-between items-center mb-4">
+                        <button type="button" onClick={() => handleMonthChange(-1)} className="p-2.5 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] transition-colors"><ChevronLeftIcon /></button>
+                        <span className="font-semibold text-base text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
                             {viewDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                         </span>
-                        <button type="button" onClick={() => handleMonthChange(1)} className="p-2 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]"><ChevronRightIcon /></button>
+                        <button type="button" onClick={() => handleMonthChange(1)} className="p-2.5 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] transition-colors"><ChevronRightIcon /></button>
                     </div>
-                    <div className="grid grid-cols-7 text-center text-xs text-gray-400 dark:text-gray-500 mb-2">
+                    <div className="grid grid-cols-7 text-center text-xs font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] opacity-70 mb-2">
                         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}
                     </div>
-                    <div className="grid grid-cols-7 gap-y-1">
+                    <div className="grid grid-cols-7">
                         {renderCalendar()}
                     </div>
                 </div>
