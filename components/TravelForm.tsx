@@ -36,15 +36,17 @@ const ChevronRightIcon = () => (
 
 // --- Custom DatePicker Component ---
 interface DatePickerProps {
-    selectedDate: string;
-    endDate: string;
+    value: string;
     onChange: (date: string) => void;
     minDate: string;
+    rangeStart: string;
+    rangeEnd: string;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange, minDate }) => {
+
+const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, rangeStart, rangeEnd }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [viewDate, setViewDate] = useState(new Date(selectedDate + 'T00:00:00'));
+    const [viewDate, setViewDate] = useState(new Date(value + 'T00:00:00'));
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -58,12 +60,12 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
     }, []);
     
     useEffect(() => {
-        // When selectedDate prop changes, update the calendar view
-        const newDate = new Date(selectedDate + 'T00:00:00');
+        // When value prop changes, update the calendar view
+        const newDate = new Date(value + 'T00:00:00');
         if (!isNaN(newDate.getTime())) {
             setViewDate(newDate);
         }
-    }, [selectedDate]);
+    }, [value]);
 
     const handleMonthChange = (offset: number) => {
         setViewDate(prev => {
@@ -91,8 +93,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
         const minDateTime = new Date(minDate + 'T00:00:00').getTime();
-        const selectedDateTime = new Date(selectedDate + 'T00:00:00').getTime();
-        const endDateTime = new Date(endDate + 'T00:00:00').getTime();
+        const startDateTime = new Date(rangeStart + 'T00:00:00').getTime();
+        const endDateTime = new Date(rangeEnd + 'T00:00:00').getTime();
         
         const today = new Date();
         today.setHours(0,0,0,0);
@@ -107,9 +109,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
             const currentDate = new Date(year, month, i);
             const currentTime = currentDate.getTime();
             const isDisabled = currentTime < minDateTime;
-            const isSelected = currentTime === selectedDateTime;
+
+            const isStartDate = currentTime === startDateTime;
             const isEndDate = currentTime === endDateTime;
-            const isInRange = currentTime > selectedDateTime && currentTime < endDateTime;
+            const isInRange = currentTime > startDateTime && currentTime < endDateTime;
             const isToday = currentTime === todayTime;
 
             const baseButtonClasses = "w-9 h-9 flex items-center justify-center text-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 focus:ring-[var(--color-primary)]";
@@ -124,7 +127,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
             }
     
             // Background and text color
-            if (isSelected || isEndDate) {
+            if (isStartDate || isEndDate) {
                 buttonClasses += ` bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold transform scale-105 shadow`;
             } else if (isInRange) {
                 buttonClasses += ` bg-transparent text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700/50`;
@@ -133,16 +136,16 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
             }
     
             // Today's date indicator
-            if (isToday && !isSelected && !isEndDate) {
+            if (isToday && !isStartDate && !isEndDate) {
                  buttonClasses += " ring-1 ring-inset ring-[var(--color-primary)] dark:ring-[var(--dark-color-primary)]";
             }
     
             // Container for range background
-            if (!isDisabled && (isSelected || isEndDate || isInRange)) {
+            if (!isDisabled && (isStartDate || isEndDate || isInRange)) {
                 containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)]";
-                if (isSelected && isEndDate) {
+                if (isStartDate && isEndDate) {
                     containerClasses += " rounded-full";
-                } else if (isSelected) {
+                } else if (isStartDate) {
                     containerClasses += " rounded-l-full";
                 } else if (isEndDate) {
                     containerClasses += " rounded-r-full";
@@ -175,7 +178,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
                 <input
                     type="text"
                     readOnly
-                    value={formatDate(selectedDate)}
+                    value={formatDate(value)}
                     onClick={() => setIsOpen(!isOpen)}
                     className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] cursor-pointer"
                 />
@@ -205,8 +208,6 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, endDate, onChange
 const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowToast }) => {
     const today = new Date().toISOString().split('T')[0];
     
-    const [duration, setDuration] = useState<number>(7);
-    const [durationUnit, setDurationUnit] = useState<'days' | 'weeks'>('days');
     const [isValidating, setIsValidating] = useState(false);
 
     const [preferences, setPreferences] = useState<TravelPreferences>({
@@ -225,26 +226,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
     const [isOtherInterestSelected, setIsOtherInterestSelected] = useState(false);
     const [otherInterest, setOtherInterest] = useState('');
     
-    useEffect(() => {
-        const startDateObj = new Date(preferences.startDate + 'T00:00:00');
-        if (isNaN(startDateObj.getTime())) return;
-
-        const daysToAdd = durationUnit === 'weeks' ? duration * 7 - 1 : duration - 1;
-        
-        const endDateObj = new Date(startDateObj);
-        endDateObj.setDate(endDateObj.getDate() + daysToAdd);
-
-        const newEndDate = endDateObj.toISOString().split('T')[0];
-
-        if (newEndDate !== preferences.endDate) {
-             setPreferences(prev => ({
-                ...prev,
-                endDate: newEndDate,
-            }));
-        }
-    }, [preferences.startDate, duration, durationUnit, preferences.endDate]);
-
-
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (destinationRef.current && !destinationRef.current.contains(event.target as Node)) {
@@ -281,6 +262,16 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setPreferences({ ...preferences, [e.target.name]: e.target.value });
+    };
+
+    const handleStartDateChange = (date: string) => {
+        const newStartDate = new Date(date + 'T00:00:00');
+        const currentEndDate = new Date(preferences.endDate + 'T00:00:00');
+        if (newStartDate > currentEndDate) {
+            setPreferences(prev => ({ ...prev, startDate: date, endDate: date }));
+        } else {
+            setPreferences(prev => ({ ...prev, startDate: date }));
+        }
     };
 
     const handleInterestChange = (interest: string) => {
@@ -333,11 +324,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
         const budgetValue = parseFloat(preferences.budget);
         if (isNaN(budgetValue) || budgetValue < 100) {
             onShowToast(`Budget must be a valid number of at least ${selectedCurrency?.symbol ?? ''}100.`, 'error');
-            return;
-        }
-        
-        if (duration < 1) {
-            onShowToast("Trip duration must be at least 1.", 'error');
             return;
         }
         
@@ -407,39 +393,27 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                     </div>
                 </div>
 
-                {/* Dates & Duration */}
+                {/* Dates */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label htmlFor="startDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Start Date</label>
                         <DatePicker
-                            selectedDate={preferences.startDate}
-                            endDate={preferences.endDate}
-                            onChange={(date) => setPreferences(prev => ({...prev, startDate: date}))}
+                            value={preferences.startDate}
+                            onChange={handleStartDateChange}
                             minDate={today}
+                            rangeStart={preferences.startDate}
+                            rangeEnd={preferences.endDate}
                         />
                     </div>
                      <div>
-                        <label htmlFor="duration" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Trip Duration</label>
-                        <div className="flex items-center gap-2">
-                             <input 
-                                type="number" 
-                                name="duration" 
-                                id="duration" 
-                                value={duration} 
-                                onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value, 10) || 1))} 
-                                min="1"
-                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
-                                placeholder="e.g., 7" />
-                            <select 
-                                name="durationUnit" 
-                                value={durationUnit} 
-                                onChange={(e) => setDurationUnit(e.target.value as 'days' | 'weeks')} 
-                                className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
-                            >
-                                <option value="days">Days</option>
-                                <option value="weeks">Weeks</option>
-                            </select>
-                        </div>
+                        <label htmlFor="endDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">End Date</label>
+                        <DatePicker
+                            value={preferences.endDate}
+                            onChange={(date) => setPreferences(prev => ({...prev, endDate: date}))}
+                            minDate={preferences.startDate}
+                            rangeStart={preferences.startDate}
+                            rangeEnd={preferences.endDate}
+                        />
                     </div>
                 </div>
 
