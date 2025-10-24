@@ -58,7 +58,7 @@ export const themes: Record<string, Theme> = {
       '--color-error-bg': '#fee2e2', // red-100
 
       '--dark-bg-primary': '#111827', // gray-900
-      '--dark-bg-secondary': 'rgba(31, 41, 55, 0.5)', // gray-800/50
+      '--dark-bg-secondary': '#1f2937', // gray-800
       '--dark-bg-muted': '#374151', // gray-700
       '--dark-text-primary': '#f9fafb', // gray-50
       '--dark-text-secondary': '#d1d5db', // gray-300
@@ -93,7 +93,7 @@ export const themes: Record<string, Theme> = {
       '--color-error-bg': '#fee2e2',
 
       '--dark-bg-primary': '#262626', // neutral-800
-      '--dark-bg-secondary': 'rgba(64, 64, 64, 0.5)', // neutral-700/50
+      '--dark-bg-secondary': '#404040', // neutral-700
       '--dark-bg-muted': '#525252', // neutral-600
       '--dark-text-primary': '#fff7ed', // orange-50
       '--dark-text-secondary': '#fed7aa', // orange-200
@@ -128,7 +128,7 @@ export const themes: Record<string, Theme> = {
       '--color-error-bg': '#fee2e2',
       
       '--dark-bg-primary': '#1f2937', // gray-800
-      '--dark-bg-secondary': 'rgba(17, 24, 39, 0.5)', // gray-900/50
+      '--dark-bg-secondary': '#111827', // gray-900
       '--dark-bg-muted': '#4b5563', // gray-600
       '--dark-text-primary': '#f9fafb', // gray-50
       '--dark-text-secondary': '#9ca3af', // gray-400
@@ -163,7 +163,7 @@ export const themes: Record<string, Theme> = {
         '--color-error-bg': '#fee2e2',
 
         '--dark-bg-primary': '#0a0a0a', // neutral-950
-        '--dark-bg-secondary': 'rgba(23, 23, 23, 0.5)', // neutral-900/50
+        '--dark-bg-secondary': '#171717', // neutral-900
         '--dark-bg-muted': '#262626', // neutral-800
         '--dark-text-primary': '#ffffff',
         '--dark-text-secondary': '#a3a3a3', // neutral-400
