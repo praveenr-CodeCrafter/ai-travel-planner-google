@@ -223,6 +223,24 @@
     .dark .marker-cluster-large div {
         color: var(--dark-bg-primary);
     }
+
+    /* New Tip Animation */
+    @keyframes tipFadeIn {
+        from { opacity: 0; transform: translateY(0.5rem); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-tip-fade-in {
+        animation: tipFadeIn 0.5s ease-out forwards;
+    }
+
+    /* Indeterminate Progress Bar */
+    @keyframes indeterminate-progress {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(200%); }
+    }
+    .animate-progress-bar-indeterminate {
+        animation: indeterminate-progress 2s ease-in-out infinite;
+    }
 </style>
 </head>
   <body>
