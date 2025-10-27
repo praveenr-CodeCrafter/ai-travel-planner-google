@@ -156,6 +156,45 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
     }
 };
 
+export const getPlaceSuggestions = async (query: string): Promise<string[]> => {
+    if (query.length < 3) {
+        return [];
+    }
+
+    const prompt = `Provide up to 5 travel destination suggestions (well-known cities, regions, or countries) that start with "${query}". Your response must be a JSON array of strings. For example, for "par", you could return ["Paris, France", "Parma, Italy", "Paraguay"].`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.STRING,
+                        description: "A travel destination suggestion."
+                    }
+                },
+                temperature: 0.1,
+                maxOutputTokens: 100,
+                thinkingConfig: { thinkingBudget: 0 }
+            }
+        });
+
+        const jsonText = response.text.trim();
+        const suggestions = JSON.parse(jsonText);
+        // Ensure it's an array of strings
+        if (Array.isArray(suggestions) && suggestions.every(item => typeof item === 'string')) {
+            return suggestions;
+        }
+        return [];
+    } catch (error) {
+        console.error("Error fetching place suggestions:", error);
+        return []; // Return empty array on error to not break the UI
+    }
+};
+
 export const validateDestination = async (destination: string): Promise<boolean> => {
     const prompt = `Is "${destination}" a real, well-known city, region, or country that a person can travel to? Respond with only "yes" or "no".`;
     

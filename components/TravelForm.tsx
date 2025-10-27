@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { TravelPreferences } from '../types';
-import { INTERESTS_OPTIONS, CURRENCY_OPTIONS, COUNTRIES } from '../types';
-import { validateDestination } from '../services/geminiService';
+import { INTERESTS_OPTIONS, CURRENCY_OPTIONS } from '../types';
+import { validateDestination, getPlaceSuggestions } from '../services/geminiService';
 
 interface TravelFormProps {
     onGenerate: (preferences: TravelPreferences) => void;
@@ -200,6 +200,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
     const today = new Date().toISOString().split('T')[0];
     
     const [isValidating, setIsValidating] = useState(false);
+    const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
 
     const [preferences, setPreferences] = useState<TravelPreferences>({
         destination: '',
@@ -213,6 +214,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
     const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const destinationRef = useRef<HTMLDivElement>(null);
+    const debounceTimeoutRef = useRef<number | null>(null);
 
     const [isOtherInterestSelected, setIsOtherInterestSelected] = useState(false);
     const [otherInterest, setOtherInterest] = useState('');
@@ -232,17 +234,31 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
     const handleDestinationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setPreferences({ ...preferences, destination: value });
-
-        if (value.length >= 3) {
-            const filtered = COUNTRIES.filter(country =>
-                country.toLowerCase().startsWith(value.toLowerCase())
-            );
-            setDestinationSuggestions(filtered);
-            setShowSuggestions(filtered.length > 0);
-        } else {
+    
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+    
+        if (value.length < 3) {
             setDestinationSuggestions([]);
             setShowSuggestions(false);
+            return;
         }
+    
+        setShowSuggestions(true);
+        setIsFetchingSuggestions(true);
+    
+        debounceTimeoutRef.current = window.setTimeout(async () => {
+            try {
+                const suggestions = await getPlaceSuggestions(value);
+                setDestinationSuggestions(suggestions);
+            } catch (error) {
+                console.error("Failed to fetch suggestions:", error);
+                setDestinationSuggestions([]);
+            } finally {
+                setIsFetchingSuggestions(false);
+            }
+        }, 300); // 300ms debounce delay
     };
     
     const handleSuggestionClick = (suggestion: string) => {
@@ -352,17 +368,23 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                         <input type="text" name="destination" id="destination" value={preferences.destination} onChange={handleDestinationChange} autoComplete="off"
                                className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
                                placeholder="e.g., Paris, France" />
-                        {showSuggestions && destinationSuggestions.length > 0 && (
+                        {showSuggestions && (
                             <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
-                                {destinationSuggestions.map((suggestion) => (
-                                    <li
-                                        key={suggestion}
-                                        className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-gray-700"
-                                        onMouseDown={() => handleSuggestionClick(suggestion)}
-                                    >
-                                        {suggestion}
-                                    </li>
-                                ))}
+                                {isFetchingSuggestions ? (
+                                    <li className="px-4 py-2 text-gray-500 dark:text-gray-400 italic">Searching for places...</li>
+                                ) : destinationSuggestions.length > 0 ? (
+                                    destinationSuggestions.map((suggestion) => (
+                                        <li
+                                            key={suggestion}
+                                            className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-gray-700"
+                                            onMouseDown={() => handleSuggestionClick(suggestion)}
+                                        >
+                                            {suggestion}
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li className="px-4 py-2 text-gray-500 dark:text-gray-400">No matching places found.</li>
+                                )}
                             </ul>
                         )}
                     </div>
