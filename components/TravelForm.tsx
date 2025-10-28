@@ -36,6 +36,7 @@ const ChevronRightIcon = () => (
 
 // --- Custom DatePicker Component ---
 interface DatePickerProps {
+    id: string;
     value: string;
     onChange: (date: string) => void;
     minDate: string;
@@ -43,12 +44,24 @@ interface DatePickerProps {
     rangeEnd: string;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, rangeStart, rangeEnd }) => {
+const DatePicker: React.FC<DatePickerProps> = ({ id, value, onChange, minDate, rangeStart, rangeEnd }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const initialDate = new Date(value + 'T00:00:00');
-    const [viewDate, setViewDate] = useState(isNaN(initialDate.getTime()) ? new Date() : initialDate);
-    const wrapperRef = useRef<HTMLDivElement>(null);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
+    const getInitialDate = () => {
+        const d = new Date(value + 'T00:00:00');
+        return isNaN(d.getTime()) ? today : d;
+    };
+    
+    const [viewDate, setViewDate] = useState(getInitialDate());
+    const [focusedDate, setFocusedDate] = useState(getInitialDate());
+
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLInputElement>(null);
+    const dialogRef = useRef<HTMLDivElement>(null);
+
+    // Close on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -59,12 +72,36 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
     
+    // Update view and focus dates when value prop changes
     useEffect(() => {
-        const newDate = new Date(value + 'T00:00:00');
-        if (!isNaN(newDate.getTime())) {
-            setViewDate(newDate);
-        }
+        const newDate = getInitialDate();
+        setViewDate(newDate);
+        setFocusedDate(newDate);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
+
+    // Focus management when calendar opens/closes or focusedDate changes
+    useEffect(() => {
+        if (isOpen) {
+            const focusedDayButton = dialogRef.current?.querySelector<HTMLButtonElement>(`[data-date="${focusedDate.toISOString().split('T')[0]}"]`);
+            focusedDayButton?.focus();
+        } else {
+            // Only focus trigger if an element inside the dialog was last focused
+            if (dialogRef.current?.contains(document.activeElement)) {
+                triggerRef.current?.focus();
+            }
+        }
+    }, [isOpen, focusedDate]);
+
+    // Reset focused date to selection when calendar opens
+    useEffect(() => {
+        if (isOpen) {
+            const initial = getInitialDate();
+            setFocusedDate(initial);
+            setViewDate(initial);
+        }
+    }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
     const handleMonthChange = (offset: number) => {
         setViewDate(prev => {
@@ -77,6 +114,64 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
     const handleDateClick = (day: Date) => {
         onChange(day.toISOString().split('T')[0]);
         setIsOpen(false);
+    };
+    
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        let newFocusedDate = new Date(focusedDate);
+        let keyHandled = false;
+        
+        switch (e.key) {
+            case 'ArrowLeft':
+                newFocusedDate.setDate(newFocusedDate.getDate() - 1);
+                keyHandled = true;
+                break;
+            case 'ArrowRight':
+                newFocusedDate.setDate(newFocusedDate.getDate() + 1);
+                keyHandled = true;
+                break;
+            case 'ArrowUp':
+                newFocusedDate.setDate(newFocusedDate.getDate() - 7);
+                keyHandled = true;
+                break;
+            case 'ArrowDown':
+                newFocusedDate.setDate(newFocusedDate.getDate() + 7);
+                keyHandled = true;
+                break;
+            case 'PageUp':
+                newFocusedDate.setMonth(newFocusedDate.getMonth() - 1);
+                keyHandled = true;
+                break;
+            case 'PageDown':
+                newFocusedDate.setMonth(newFocusedDate.getMonth() + 1);
+                keyHandled = true;
+                break;
+            case 'Home':
+                newFocusedDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+                keyHandled = true;
+                break;
+            case 'End':
+                 newFocusedDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0);
+                 keyHandled = true;
+                 break;
+            case 'Enter':
+            case ' ':
+                 handleDateClick(focusedDate);
+                 keyHandled = true;
+                 break;
+            case 'Escape':
+                setIsOpen(false);
+                keyHandled = true;
+                break;
+        }
+
+        if (keyHandled) {
+            e.preventDefault();
+            
+            if (newFocusedDate.getMonth() !== viewDate.getMonth() || newFocusedDate.getFullYear() !== viewDate.getFullYear()) {
+                 setViewDate(newFocusedDate);
+            }
+            setFocusedDate(newFocusedDate);
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -96,17 +191,16 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
         const startDateTime = rangeStart ? new Date(rangeStart + 'T00:00:00').getTime() : NaN;
         const endDateTime = rangeEnd ? new Date(rangeEnd + 'T00:00:00').getTime() : NaN;
         
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
         const todayTime = today.getTime();
         
         const days = [];
         for (let i = 0; i < firstDayOfMonth; i++) {
-            days.push(<div key={`prev-${i}`}></div>);
+            days.push(<div key={`prev-${i}`} aria-hidden="true"></div>);
         }
 
         for (let i = 1; i <= daysInMonth; i++) {
             const currentDate = new Date(year, month, i);
+            const currentDateStr = currentDate.toISOString().split('T')[0];
             const currentTime = currentDate.getTime();
             const isDisabled = currentTime < minDateTime;
 
@@ -115,9 +209,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
             const isInRange = currentTime > startDateTime && currentTime < endDateTime;
             const isToday = currentTime === todayTime;
             const isSingleDaySelection = startDateTime === endDateTime;
+            const isFocused = focusedDate.getTime() === currentTime;
 
             let containerClasses = "flex items-center justify-center h-10";
-            let dayClasses = "w-10 h-10 flex items-center justify-center text-sm transition-colors duration-150 ease-in-out rounded-full";
+            let dayClasses = "w-10 h-10 flex items-center justify-center text-sm transition-colors duration-150 ease-in-out rounded-full focus:outline-none";
 
             if (isDisabled) {
                 dayClasses += " text-gray-300 dark:text-gray-600 cursor-not-allowed";
@@ -142,14 +237,22 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
                 }
             }
 
+            if (isFocused) {
+                 dayClasses += " ring-2 ring-offset-2 ring-[var(--color-primary)] ring-offset-[var(--bg-secondary)] dark:ring-offset-[var(--dark-bg-secondary)]";
+            }
+
             days.push(
-                <div key={i} className={containerClasses}>
+                <div key={i} className={containerClasses} role="gridcell" aria-selected={isStartDate || isEndDate || isInRange}>
                     <button
                         type="button"
                         onClick={() => !isDisabled && handleDateClick(currentDate)}
                         disabled={isDisabled}
                         className={dayClasses}
                         aria-pressed={isStartDate || isEndDate || isInRange}
+                        aria-label={currentDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        aria-current={isToday ? "date" : undefined}
+                        data-date={currentDateStr}
+                        tabIndex={-1}
                     >
                         {i}
                     </button>
@@ -167,27 +270,43 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, minDate, range
                     <CalendarIcon />
                 </div>
                 <input
+                    ref={triggerRef}
+                    id={id}
                     type="text"
                     readOnly
                     value={formatDate(value)}
                     onClick={() => setIsOpen(!isOpen)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsOpen(true); } }}
                     className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] cursor-pointer"
+                    aria-haspopup="dialog"
+                    aria-expanded={isOpen}
+                    aria-controls={isOpen ? "date-picker-dialog" : undefined}
                 />
             </div>
             {isOpen && (
-                <div className="absolute z-20 mt-2 w-72 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-xl shadow-2xl p-4 animate-calendar-in">
+                <div
+                    ref={dialogRef}
+                    id="date-picker-dialog"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="calendar-heading"
+                    onKeyDown={handleKeyDown}
+                    className="absolute z-20 mt-2 w-72 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-xl shadow-2xl p-4 animate-calendar-in"
+                >
                     <div className="flex justify-between items-center mb-4">
-                        <button type="button" onClick={() => handleMonthChange(-1)} className="p-2.5 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] transition-colors"><ChevronLeftIcon /></button>
-                        <span className="font-semibold text-base text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
+                        <button type="button" onClick={() => handleMonthChange(-1)} aria-label="Previous month" className="p-2.5 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] transition-colors"><ChevronLeftIcon /></button>
+                        <span id="calendar-heading" aria-live="polite" className="font-semibold text-base text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
                             {viewDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
                         </span>
-                        <button type="button" onClick={() => handleMonthChange(1)} className="p-2.5 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] transition-colors"><ChevronRightIcon /></button>
+                        <button type="button" onClick={() => handleMonthChange(1)} aria-label="Next month" className="p-2.5 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] transition-colors"><ChevronRightIcon /></button>
                     </div>
-                    <div className="grid grid-cols-7 text-center text-xs font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] opacity-70 mb-2">
-                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d}>{d}</div>)}
-                    </div>
-                    <div className="grid grid-cols-7">
-                        {renderCalendar()}
+                    <div role="grid" aria-labelledby="calendar-heading">
+                        <div role="row" className="grid grid-cols-7 text-center text-xs font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] opacity-70 mb-2">
+                           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d} role="columnheader" aria-label={d}>{d}</div>)}
+                        </div>
+                        <div className="grid grid-cols-7">
+                            {renderCalendar()}
+                        </div>
                     </div>
                 </div>
             )}
@@ -411,6 +530,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                     <div>
                         <label htmlFor="startDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Start Date</label>
                         <DatePicker
+                            id="startDate"
                             value={preferences.startDate}
                             onChange={handleStartDateChange}
                             minDate={today}
@@ -421,6 +541,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                      <div>
                         <label htmlFor="endDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">End Date</label>
                         <DatePicker
+                            id="endDate"
                             value={preferences.endDate}
                             onChange={(date) => setPreferences(prev => ({...prev, endDate: date}))}
                             minDate={preferences.startDate}
