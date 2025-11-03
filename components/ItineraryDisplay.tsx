@@ -378,6 +378,17 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
     } | null>(null);
     const pdfContentRef = useRef<HTMLDivElement>(null);
 
+    const ratingLabels: { [key: number]: string } = {
+        0: "How was this plan?",
+        1: "Could be better",
+        2: "It was okay",
+        3: "Good",
+        4: "Great!",
+        5: "Amazing!",
+    };
+    const currentRatingLabel = ratingLabels[hoverRating || rating] || ratingLabels[0];
+
+
     const handleTipToggle = (index: number) => {
         setOpenTipIndex(openTipIndex === index ? null : index);
     };
@@ -715,12 +726,14 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                          <p className="mt-2 text-lg text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] max-w-2xl">
                             Your feedback helps our AI get smarter. Let us know how we did so we can make our travel plans even better for you and others!
                         </p>
-                        <form onSubmit={handleFeedbackSubmit} className="space-y-8 mt-10 w-full max-w-lg">
+                        <form onSubmit={handleFeedbackSubmit} className="space-y-6 mt-10 w-full max-w-lg">
                             <div>
-                                <label className="block text-base font-semibold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-4 text-center">
-                                    Overall Rating
-                                </label>
-                                <div className="flex items-center justify-center space-x-2 sm:space-x-4" onMouseLeave={() => setHoverRating(0)}>
+                                <div className="h-8 flex items-center justify-center transition-opacity duration-300">
+                                    <p key={currentRatingLabel} className="text-lg font-semibold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] text-center animate-fade-in">
+                                        {currentRatingLabel}
+                                    </p>
+                                </div>
+                                <div className="flex items-center justify-center space-x-2 sm:space-x-4 py-2" onMouseLeave={() => setHoverRating(0)}>
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button
                                             key={star}
@@ -735,27 +748,39 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                     ))}
                                 </div>
                             </div>
-                            <div>
-                                <label htmlFor="feedback-comment" className="block text-base font-semibold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-2 text-center">
-                                    Any suggestions? (optional)
-                                </label>
-                                <textarea
-                                    id="feedback-comment"
-                                    name="comment"
-                                    rows={4}
-                                    value={comment}
-                                    onChange={(e) => setComment(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white/60 dark:bg-gray-800/60 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-inner focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200 placeholder-gray-400"
-                                    placeholder="What did you like or dislike? What could be better?"
-                                />
+                           
+                            {rating > 0 && (
+                                <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+                                    <label htmlFor="feedback-comment" className="sr-only">
+                                        Any suggestions? (optional)
+                                    </label>
+                                    <div className="relative">
+                                        <textarea
+                                            id="feedback-comment"
+                                            name="comment"
+                                            rows={4}
+                                            value={comment}
+                                            onChange={(e) => setComment(e.target.value)}
+                                            maxLength={500}
+                                            className="w-full px-4 py-3 bg-white/60 dark:bg-gray-800/60 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-inner focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200 placeholder-gray-400"
+                                            placeholder={rating < 3 ? "What could we improve for your next plan?" : "What did you like most about this itinerary?"}
+                                        />
+                                        <p className="absolute bottom-2 right-3 text-xs text-gray-400 dark:text-gray-500">
+                                            {comment.length} / 500
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={rating === 0}
+                                    className="w-full flex justify-center items-center gap-2 px-6 py-4 border border-transparent text-lg font-bold rounded-lg shadow-lg text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-in-out"
+                                >
+                                    Submit Feedback
+                                </button>
                             </div>
-                            <button
-                                type="submit"
-                                disabled={rating === 0}
-                                className="w-full flex justify-center items-center gap-2 px-6 py-4 border border-transparent text-lg font-bold rounded-lg shadow-lg text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-in-out"
-                            >
-                                Submit Feedback
-                            </button>
                         </form>
                     </div>
                 )}
