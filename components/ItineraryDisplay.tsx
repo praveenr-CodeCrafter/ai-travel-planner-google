@@ -85,6 +85,13 @@ const CalendarDaysIcon = () => (
     </svg>
 );
 
+const CalendarPlusIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 11v6m-3-3h6" />
+    </svg>
+);
+
 const TicketIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
@@ -138,12 +145,14 @@ const RatingStarIcon = ({ filled }: { filled: boolean }) => (
 interface ItineraryDayCardProps {
     plan: DailyPlan;
     destination: string;
+    startDate: string;
     index: number;
     selectedActivity: { activity: Activity, day: number } | null;
     onActivitySelect: (activity: Activity | null, day?: number) => void;
+    onShowToast: (message: string, type?: 'error' | 'success') => void;
 }
 
-const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, index, selectedActivity, onActivitySelect }) => {
+const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, startDate, index, selectedActivity, onActivitySelect, onShowToast }) => {
     const keyAttraction = plan.activities.length > 0 ? plan.activities[0].attractionName : "scenic view";
     const [learnMoreState, setLearnMoreState] = useState<Record<string, { isOpen: boolean; data: { description: string; sources: Array<{uri: string, title: string}> } | null; isLoading: boolean; error: string | null }>>({});
 
@@ -172,6 +181,78 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
             setLearnMoreState(prev => ({ ...prev, [attractionName]: { isOpen: true, data: null, isLoading: false, error: 'Could not load details.' } }));
         }
     };
+    
+    const handleAddToCalendar = (activity: Activity) => {
+        try {
+            // 1. Calculate start and end dates
+            const tripStartDate = new Date(startDate + 'T00:00:00');
+            const activityDate = new Date(tripStartDate);
+            activityDate.setDate(tripStartDate.getDate() + plan.day - 1);
+
+            const timeParts = activity.time.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!timeParts) throw new Error('Invalid time format');
+            
+            let [, hoursStr, minutesStr, period] = timeParts;
+            let hours = parseInt(hoursStr, 10);
+            const minutes = parseInt(minutesStr, 10);
+
+            if (period.toUpperCase() === 'PM' && hours < 12) hours += 12;
+            if (period.toUpperCase() === 'AM' && hours === 12) hours = 0; // Midnight case
+            activityDate.setHours(hours, minutes, 0, 0);
+
+            const durationMatch = activity.estimatedDuration?.match(/(\d+(\.\d+)?)/);
+            const durationHours = durationMatch ? parseFloat(durationMatch[1]) : 1;
+            const endDate = new Date(activityDate.getTime() + durationHours * 60 * 60 * 1000);
+
+            // 2. Format dates for .ics (YYYYMMDDTHHMMSS)
+            const formatIcsDate = (date: Date) => {
+                const pad = (num: number) => num.toString().padStart(2, '0');
+                const year = date.getFullYear();
+                const month = pad(date.getMonth() + 1);
+                const day = pad(date.getDate());
+                const h = pad(date.getHours());
+                const m = pad(date.getMinutes());
+                const s = pad(date.getSeconds());
+                return `${year}${month}${day}T${h}${m}${s}`;
+            };
+            const dtstart = formatIcsDate(activityDate);
+            const dtend = formatIcsDate(endDate);
+            const dtstamp = formatIcsDate(new Date());
+
+            // 3. Create .ics content
+            const icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//AI Travel Planner//EN',
+                'BEGIN:VEVENT',
+                `UID:${Date.now()}-${activity.attractionName.replace(/[^a-z0-9]/gi, '')}@aitravelplanner.com`,
+                `DTSTAMP:${dtstamp}`,
+                `DTSTART:${dtstart}`,
+                `DTEND:${dtend}`,
+                `SUMMARY:${activity.attractionName}`,
+                `DESCRIPTION:${activity.description.replace(/,/g, '\\,').replace(/\n/g, '\\n')}`,
+                `LOCATION:${activity.attractionName}, ${destination}`,
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            // 4. Trigger download
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${activity.attractionName.replace(/[^a-z0-9]/gi, '_')}.ics`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("Failed to generate .ics file:", error);
+            onShowToast("Could not generate calendar file. The activity's time or duration might be invalid.", 'error');
+        }
+    };
+
 
     const isDaySelected = selectedActivity?.day === plan.day;
 
@@ -260,16 +341,24 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                                     </div>
                                                 )}
                                             </div>
-                                             {/* Learn More Section */}
-                                            <div>
+                                             {/* Action Buttons */}
+                                            <div className="flex gap-2">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleLearnMoreClick(activity.attractionName); }}
-                                                    className="w-full flex items-center justify-center text-sm px-3 py-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-gray-700/80 hover:bg-green-200/60 dark:hover:bg-gray-600/80 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                                                    className="w-full flex-grow flex items-center justify-center text-sm px-3 py-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-gray-700/80 hover:bg-green-200/60 dark:hover:bg-gray-600/80 transition-colors disabled:opacity-50 disabled:cursor-wait"
                                                     disabled={currentLearnMoreState?.isLoading}
                                                     aria-expanded={!!currentLearnMoreState?.isOpen}
                                                 >
                                                     <InformationCircleIcon />
                                                     {currentLearnMoreState?.isLoading ? 'Loading...' : (currentLearnMoreState?.isOpen ? 'Hide Details' : 'Learn More')}
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleAddToCalendar(activity); }}
+                                                    className="flex-shrink-0 p-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-gray-700/80 hover:bg-green-200/60 dark:hover:bg-gray-600/80 transition-colors"
+                                                    title="Add to Calendar"
+                                                    aria-label={`Add ${activity.attractionName} to your calendar`}
+                                                >
+                                                    <CalendarPlusIcon />
                                                 </button>
 
                                                 {currentLearnMoreState?.isOpen && (
@@ -631,7 +720,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {itinerary.dailyPlans.sort((a,b) => a.day - b.day).map((plan, index) => (
-                    <ItineraryDayCard key={plan.day} plan={plan} destination={itinerary.destination} index={index} selectedActivity={selectedActivity} onActivitySelect={onActivitySelect} />
+                    <ItineraryDayCard key={plan.day} plan={plan} destination={itinerary.destination} startDate={itinerary.startDate} index={index} selectedActivity={selectedActivity} onActivitySelect={onActivitySelect} onShowToast={onShowToast} />
                 ))}
             </div>
 
