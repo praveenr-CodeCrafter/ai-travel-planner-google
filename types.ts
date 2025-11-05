@@ -12,6 +12,11 @@ export interface Coordinates {
   lng: number;
 }
 
+export interface BookingInfo {
+  text: string;
+  url?: string;
+}
+
 export interface Activity {
   time: string;
   description: string;
@@ -19,7 +24,7 @@ export interface Activity {
   coordinates: Coordinates;
   openingHours?: string;
   estimatedDuration?: string;
-  bookingInfo?: string;
+  bookingInfo?: BookingInfo;
   userReviewsSummary?: string;
   averageCost?: string;
 }

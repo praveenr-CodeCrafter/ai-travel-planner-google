@@ -317,11 +317,28 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                                         <span>{activity.openingHours}</span>
                                                     </div>
                                                 )}
-                                                {activity.bookingInfo && (
-                                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                {activity.bookingInfo && activity.bookingInfo.text && (
+                                                    <div className="flex items-start gap-2 text-gray-600 dark:text-gray-300">
                                                         <TicketIcon />
-                                                        <strong>Booking:</strong> 
-                                                        <span>{activity.bookingInfo}</span>
+                                                        <div>
+                                                            <strong>Booking:</strong>
+                                                            <span className="ml-1">{activity.bookingInfo.text}</span>
+                                                            {activity.bookingInfo.url && (
+                                                                <a
+                                                                    href={activity.bookingInfo.url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="ml-2 inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-primary)] hover:underline"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    aria-label="Book now online"
+                                                                >
+                                                                    Book Now
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                    </svg>
+                                                                </a>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 )}
                                                 {activity.userReviewsSummary && activity.userReviewsSummary !== 'N/A' && (

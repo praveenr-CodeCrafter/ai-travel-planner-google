@@ -30,7 +30,7 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
       For each activity, also provide:
       - openingHours: Typical opening hours (e.g., "9:00 AM - 5:00 PM", or "Varies").
       - estimatedDuration: A suggested duration (e.g., "2-3 hours").
-      - bookingInfo: Practical booking information. State whether tickets need to be booked in advance, if reservations are recommended, or if no booking is needed. Be specific, for example: "Book tickets online a week in advance to save 15%" or "Reservations essential, especially for weekend dinners."
+      - bookingInfo: An object containing booking information. It must have a 'text' field with descriptive booking advice. If a direct, official booking URL exists, include it in an optional 'url' field. Example text: "Book tickets online a week in advance for a discount.". If no booking is needed, the text should state "No booking required."
       - userReviewsSummary: A brief, one-sentence summary of user reviews (e.g., "Highly rated for its breathtaking views and historical significance."). If review information is not readily available, return "N/A".
       - averageCost: The estimated cost per person (e.g., "$25 USD", "Free entry"). If cost information is not readily available, return "N/A".
       Ensure attraction and restaurant names are real and well-known for the destination.
@@ -109,7 +109,15 @@ export const generateItinerary = async (preferences: TravelPreferences): Promise
                                                 },
                                                 openingHours: { type: Type.STRING, description: "Typical opening hours (e.g., '9:00 AM - 5:00 PM')." },
                                                 estimatedDuration: { type: Type.STRING, description: "Suggested duration for the activity (e.g., '2-3 hours')." },
-                                                bookingInfo: { type: Type.STRING, description: "Practical booking advice, such as whether tickets need to be booked in advance or if reservations are recommended." },
+                                                bookingInfo: {
+                                                    type: Type.OBJECT,
+                                                    description: "Practical booking advice, including descriptive text and an optional official booking URL.",
+                                                    properties: {
+                                                        text: { type: Type.STRING, description: "Descriptive booking information (e.g., 'Book tickets online a week in advance to save 15%')." },
+                                                        url: { type: Type.STRING, description: "The direct, official URL for booking tickets or making reservations, if available." }
+                                                    },
+                                                    required: ["text"]
+                                                },
                                                 userReviewsSummary: { type: Type.STRING, description: "A one-sentence summary of user reviews. 'N/A' if not available." },
                                                 averageCost: { type: Type.STRING, description: "The estimated cost per person. 'N/A' if not available." },
                                             },
