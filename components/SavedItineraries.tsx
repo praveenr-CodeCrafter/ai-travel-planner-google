@@ -45,7 +45,7 @@ const SavedItineraries: React.FC<SavedItinerariesProps> = ({ itineraries, onLoad
             </h2>
             <ul className="space-y-4">
                 {itineraries.map(it => (
-                    <li key={it.id} className="p-4 bg-[var(--bg-primary)] dark:bg-[var(--dark-bg-primary)] rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-[var(--border-color)] dark:border-[var(--dark-border-color)] transition-shadow hover:shadow-md">
+                    <li key={it.id} className="p-4 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-transparent hover:border-[var(--border-color)] dark:hover:border-[var(--dark-border-color)] transition-all duration-200 hover:shadow-md">
                         <div>
                             <h3 className="font-semibold text-lg text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{it.title}</h3>
                             <p className="text-sm text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">
@@ -55,7 +55,7 @@ const SavedItineraries: React.FC<SavedItinerariesProps> = ({ itineraries, onLoad
                         <div className="flex gap-2 flex-shrink-0 self-end sm:self-center">
                             <button 
                                 onClick={() => onLoad(it.id)} 
-                                className="flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] transition-colors"
+                                className="flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] hover:opacity-90 transition-opacity"
                                 aria-label={`Load itinerary for ${it.title}`}
                             >
                                 <LoadIcon />

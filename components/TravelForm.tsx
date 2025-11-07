@@ -9,11 +9,47 @@ interface TravelFormProps {
     onShowToast: (message: string, type?: 'error' | 'success') => void;
 }
 
-const CheckIcon: React.FC = () => (
-    <svg className="h-4 w-4 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+const FoodIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M2 4.75A2.75 2.75 0 014.75 2h10.5A2.75 2.75 0 0118 4.75v10.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25V4.75zM4.75 3.5a1.25 1.25 0 00-1.25 1.25v10.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25V4.75c0-.69-.56-1.25-1.25-1.25H4.75z" />
+        <path d="M6.5 12.5a.5.5 0 01.5-.5h2a.5.5 0 010 1h-2a.5.5 0 01-.5-.5zM7 7a.5.5 0 000 1h6a.5.5 0 000-1H7z" />
     </svg>
 );
+const AdventureIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M5.05 14.482a1 1 0 001.414 1.414L10 12.364l3.536 3.536a1 1 0 001.414-1.414L11.414 10l3.536-3.536a1 1 0 00-1.414-1.414L10 8.586 6.464 5.05A1 1 0 005.05 6.464L8.586 10l-3.536 3.536z" clipRule="evenodd" />
+    </svg>
+);
+const SightseeingIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+        <path fillRule="evenodd" d="M.458 10C3.732 4.943 9.522 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-9.064 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+    </svg>
+);
+const RelaxationIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+    </svg>
+);
+const HistoryIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm.5 3h11a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-1a.5.5 0 01.5-.5zM6 14a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+    </svg>
+);
+const ArtCultureIcon: React.FC = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M17.293 2.293a1 1 0 011.414 0l.001.001a1 1 0 010 1.414l-11 11A1 1 0 016 15H3a1 1 0 01-1-1V5a1 1 0 011.707-.707l1.414-1.414a1 1 0 011.414 0l4.293 4.293L17.293 2.293z" />
+    </svg>
+);
+
+const INTEREST_ICONS: { [key: string]: React.FC } = {
+    "Food": FoodIcon,
+    "Adventure": AdventureIcon,
+    "Sightseeing": SightseeingIcon,
+    "Relaxation": RelaxationIcon,
+    "History": HistoryIcon,
+    "Art & Culture": ArtCultureIcon,
+};
 
 const CalendarIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -277,7 +313,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ id, value, onChange, minDate, r
                     value={formatDate(value)}
                     onClick={() => setIsOpen(!isOpen)}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsOpen(true); } }}
-                    className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] cursor-pointer"
+                    className="w-full pl-10 pr-4 py-2 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] cursor-pointer"
                     aria-haspopup="dialog"
                     aria-expanded={isOpen}
                     aria-controls={isOpen ? "date-picker-dialog" : undefined}
@@ -485,24 +521,24 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                     <div className="relative" ref={destinationRef}>
                         <label htmlFor="destination" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Destination</label>
                         <input type="text" name="destination" id="destination" value={preferences.destination} onChange={handleDestinationChange} autoComplete="off"
-                               className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
+                               className="w-full px-4 py-2 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
                                placeholder="e.g., Paris, France" />
                         {showSuggestions && (
-                            <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
+                            <ul className="absolute z-10 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
                                 {isFetchingSuggestions ? (
-                                    <li className="px-4 py-2 text-gray-500 dark:text-gray-400 italic">Searching for places...</li>
+                                    <li className="px-4 py-2 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] italic">Searching for places...</li>
                                 ) : destinationSuggestions.length > 0 ? (
                                     destinationSuggestions.map((suggestion) => (
                                         <li
                                             key={suggestion}
-                                            className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-gray-700"
+                                            className="px-4 py-2 text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)]"
                                             onMouseDown={() => handleSuggestionClick(suggestion)}
                                         >
                                             {suggestion}
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="px-4 py-2 text-gray-500 dark:text-gray-400">No matching places found.</li>
+                                    <li className="px-4 py-2 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">No matching places found.</li>
                                 )}
                             </ul>
                         )}
@@ -512,13 +548,13 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                         <div className="flex items-center gap-2">
                              <div className="relative flex-grow">
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span className="text-gray-500 dark:text-gray-400">{selectedCurrency?.symbol ?? '$'}</span>
+                                    <span className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">{selectedCurrency?.symbol ?? '$'}</span>
                                 </div>
                                 <input type="number" name="budget" id="budget" value={preferences.budget} onChange={handleChange} min="100" step="100"
-                                    className="w-full py-2 pl-10 pr-4 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
+                                    className="w-full py-2 pl-10 pr-4 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
                                     placeholder="e.g., 2000" />
                             </div>
-                            <select name="currency" value={preferences.currency} onChange={handleChange} className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
+                            <select name="currency" value={preferences.currency} onChange={handleChange} className="px-4 py-2 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
                                 {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
                             </select>
                         </div>
@@ -557,25 +593,25 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                     <div className="flex flex-wrap gap-3">
                         {INTERESTS_OPTIONS.map((interest) => {
                              const isSelected = preferences.interests.includes(interest);
+                             const Icon = INTEREST_ICONS[interest];
                              return (
                                 <button key={interest} type="button" onClick={() => handleInterestChange(interest)}
-                                        className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
-                                            isSelected
-                                                ? 'bg-[var(--color-primary)] text-[var(--color-primary-text)] shadow'
-                                                : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)] hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)]'
-                                        }`}>
-                                    {isSelected && <CheckIcon />}
+                                    className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-1 hover:shadow-lg ${
+                                        isSelected
+                                            ? 'bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white shadow-md'
+                                            : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)]'
+                                    }`}>
+                                    {Icon && <Icon />}
                                     {interest}
                                 </button>
                              );
                         })}
                         <button type="button" onClick={handleOtherInterestClick}
-                                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
+                                className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-1 hover:shadow-lg ${
                                     isOtherInterestSelected
-                                        ? 'bg-[var(--color-primary)] text-[var(--color-primary-text)] shadow'
-                                        : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)] hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)]'
+                                        ? 'bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white shadow-md'
+                                        : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)]'
                                 }`}>
-                            {isOtherInterestSelected && <CheckIcon />}
                             Other
                         </button>
                     </div>
@@ -587,7 +623,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                                 type="text"
                                 value={otherInterest}
                                 onChange={handleOtherInterestChange}
-                                className="w-full md:w-2/3 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
+                                className="w-full md:w-2/3 px-4 py-2 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
                                 placeholder="Type your custom interest..."
                                 aria-label="Custom interest input"
                             />
@@ -598,7 +634,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
                 {/* Action Buttons */}
                 <div className="pt-2">
                     <button type="submit" disabled={isLoading || isValidating}
-                            className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:dark:bg-gray-600">
+                            className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transform hover:scale-105 transition-transform duration-200">
                         {isLoading || isValidating ? (
                            <>
                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

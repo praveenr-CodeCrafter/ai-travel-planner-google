@@ -39,7 +39,42 @@ export interface Theme {
 
 export const themes: Record<string, Theme> = {
   default: {
-    name: 'Default',
+    name: 'Deep Space',
+    colors: {
+      '--bg-primary': '#f8fafc', // slate-50
+      '--bg-secondary': '#ffffff',
+      '--bg-muted': '#f1f5f9', // slate-100
+      '--text-primary': '#0f172a', // slate-900
+      '--text-secondary': '#475569', // slate-600
+      '--text-inverted': '#334155', // slate-700
+      '--border-color': '#e2e8f0', // slate-200
+      '--color-primary': '#2dd4bf', // teal-400
+      '--color-primary-hover': '#5eead4', // teal-300
+      '--color-primary-light': 'rgba(45, 212, 191, 0.1)',
+      '--color-primary-text': '#0f172a', // slate-900
+      '--gradient-from': '#2dd4bf', // teal-400
+      '--gradient-to': '#6366f1', // indigo-500
+      '--color-error': '#dc2626',
+      '--color-error-bg': '#fee2e2',
+
+      '--dark-bg-primary': '#0D1117', // deep navy
+      '--dark-bg-secondary': '#161B22', // charcoal
+      '--dark-bg-muted': '#21262d', // slightly lighter charcoal
+      '--dark-text-primary': '#f0f6fc', // off-white
+      '--dark-text-secondary': '#8b949e', // gray
+      '--dark-text-inverted': '#c9d1d9',
+      '--dark-border-color': '#30363d', // subtle border
+      '--dark-color-primary': '#2dd4bf', // teal-400
+      '--dark-color-primary-hover': '#5eead4', // teal-300
+      '--dark-color-primary-light': 'rgba(45, 212, 191, 0.15)',
+      '--dark-gradient-from': '#2dd4bf', // teal-400
+      '--dark-gradient-to': '#6366f1', // indigo-500
+      '--dark-color-error': '#fca5a5',
+      '--dark-color-error-bg': 'rgba(153, 27, 27, 0.5)',
+    },
+  },
+  evergreen: {
+    name: 'Evergreen',
     colors: {
       '--bg-primary': '#f0fdf4', // green-50
       '--bg-secondary': '#ffffff', // white
@@ -66,11 +101,11 @@ export const themes: Record<string, Theme> = {
       '--dark-border-color': '#374151', // gray-700
       '--dark-color-primary': '#34d399', // green-400
       '--dark-color-primary-hover': '#10b981', // green-500
-      '--dark-color-primary-light': '#1f2937', // gray-800
+      '--dark-color-primary-light': 'rgba(52, 211, 153, 0.15)',
       '--dark-gradient-from': '#34d399', // green-400
       '--dark-gradient-to': '#2dd4bf', // teal-400
       '--dark-color-error': '#fca5a5', // red-300
-      '--dark-color-error-bg': 'rgba(153, 27, 27, 0.5)', // red-900/50
+      '--dark-color-error-bg': 'rgba(153, 27, 27, 0.5)',
     },
   },
   tropical: {
@@ -101,7 +136,7 @@ export const themes: Record<string, Theme> = {
       '--dark-border-color': '#737373', // neutral-600
       '--dark-color-primary': '#fb923c', // orange-400
       '--dark-color-primary-hover': '#f97316', // orange-500
-      '--dark-color-primary-light': '#404040', // neutral-700
+      '--dark-color-primary-light': 'rgba(251, 146, 60, 0.15)',
       '--dark-gradient-from': '#fb923c', // orange-400
       '--dark-gradient-to': '#67e8f9', // cyan-300
       '--dark-color-error': '#fca5a5',
@@ -136,7 +171,7 @@ export const themes: Record<string, Theme> = {
       '--dark-border-color': '#4b5563', // gray-600
       '--dark-color-primary': '#818cf8', // indigo-400
       '--dark-color-primary-hover': '#6366f1', // indigo-500
-      '--dark-color-primary-light': '#374151', // gray-700
+      '--dark-color-primary-light': 'rgba(129, 140, 248, 0.15)',
       '--dark-gradient-from': '#818cf8', // indigo-400
       '--dark-gradient-to': '#f472b6', // pink-400
       '--dark-color-error': '#fca5a5',
@@ -171,7 +206,7 @@ export const themes: Record<string, Theme> = {
         '--dark-border-color': '#404040', // neutral-700
         '--dark-color-primary': '#e5e5e5', // neutral-200
         '--dark-color-primary-hover': '#f5f5f5', // neutral-100
-        '--dark-color-primary-light': '#262626', // neutral-800
+        '--dark-color-primary-light': 'rgba(229, 229, 229, 0.15)',
         '--dark-gradient-from': '#e5e5e5', // neutral-200
         '--dark-gradient-to': '#a3a3a3', // neutral-400
         '--dark-color-error': '#fca5a5',

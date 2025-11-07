@@ -42,7 +42,7 @@ const ThemeSelector: React.FC = () => {
         <div className="relative" ref={wrapperRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-white dark:bg-gray-800/50 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800 focus:ring-green-500"
+                className="flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] hover:bg-gray-200 dark:hover:bg-[var(--dark-border-color)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)] dark:focus:ring-offset-[var(--dark-bg-secondary)] focus:ring-[var(--color-primary)] transition-colors"
                 aria-haspopup="true"
                 aria-expanded={isOpen}
             >
@@ -52,14 +52,14 @@ const ThemeSelector: React.FC = () => {
             </button>
             {isOpen && (
                 <ul
-                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20 animate-scale-in origin-top-right"
+                    className="absolute right-0 mt-2 w-48 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-lg z-20 animate-scale-in origin-top-right"
                     role="menu"
                 >
                     {Object.entries(themes).map(([key, value]) => (
                         <li key={key}>
                             <button
                                 onClick={() => handleThemeChange(key)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-gray-700/50"
+                                className="w-full text-left px-4 py-2 text-sm text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)]"
                                 role="menuitem"
                             >
                                 {value.name}

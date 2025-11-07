@@ -29,7 +29,7 @@ const RestaurantIcon = () => (
 );
 
 const WeatherIcon = () => (
-    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-2.08-5.839c-1.135-.23-2.343-.394-3.566-.394a1.875 1.875 0 00-1.875 1.875c0 .355.085.694.238 1.008-1.03.26-1.996.685-2.828 1.25A3.75 3.75 0 004.5 15z" />
     </svg>
 );
@@ -258,24 +258,22 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
 
     return (
         <div 
-            className={`group bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] opacity-0 animate-fade-in ${isDaySelected ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-primary)] dark:ring-offset-[var(--dark-bg-primary)] ring-[var(--color-primary)] scale-105' : 'border border-[var(--border-color)] dark:border-[var(--dark-border-color)]'}`}
+            className={`group bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] opacity-0 animate-fade-in border border-[var(--border-color)] dark:border-[var(--dark-border-color)] ${isDaySelected ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-primary)] dark:ring-offset-[var(--dark-bg-primary)] ring-[var(--color-primary)] scale-105' : ''}`}
             style={{ animationDelay: `${index * 150}ms` }}
         >
-            <div className="h-56 w-full overflow-hidden">
+            <div className="relative h-60 w-full overflow-hidden">
                 <GeneratedImage attractionName={keyAttraction} destination={destination} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 p-6 text-white">
+                    <p className="font-bold text-teal-300 uppercase tracking-widest text-sm">Day {plan.day}</p>
+                    <h3 className="text-3xl font-bold" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{plan.theme}</h3>
+                </div>
+                <div className="absolute top-4 right-4 flex items-center gap-2 glassmorphism p-2 rounded-lg text-xs font-medium text-white">
+                    <WeatherIcon />
+                    <span>{plan.weather.forecast} &bull; {plan.weather.temperature}</span>
+                </div>
             </div>
             <div className="p-6">
-                <h3 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">{plan.theme}</h3>
-                <div className="flex items-center justify-between mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    <p className="font-bold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] uppercase tracking-wide">Day {plan.day}</p>
-                    <div className="flex items-center gap-2">
-                        <WeatherIcon />
-                        <span>{plan.weather.forecast} &bull; {plan.weather.temperature}</span>
-                    </div>
-                </div>
-
-                <hr className="my-4 border-[var(--border-color)] dark:border-[var(--dark-border-color)]" />
-                
                 <div className="space-y-6">
                     <div>
                         <h4 className="font-semibold text-lg text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-3">Activities</h4>
@@ -302,7 +300,7 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                             <div className="h-48 w-full overflow-hidden rounded-lg relative my-2 shadow-inner">
                                                 <GeneratedImage attractionName={activity.attractionName} destination={destination} />
                                             </div>
-                                            <div className="p-3 bg-green-50/50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 text-sm space-y-2">
+                                            <div className="p-3 bg-[var(--bg-muted)]/50 dark:bg-[var(--dark-bg-muted)]/50 rounded-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] text-sm space-y-2">
                                                 {activity.estimatedDuration && (
                                                     <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                                                         <ClockIcon />
@@ -362,7 +360,7 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleLearnMoreClick(activity.attractionName); }}
-                                                    className="w-full flex-grow flex items-center justify-center text-sm px-3 py-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-gray-700/80 hover:bg-green-200/60 dark:hover:bg-gray-600/80 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                                                    className="w-full flex-grow flex items-center justify-center text-sm px-3 py-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-[var(--dark-bg-muted)] hover:bg-green-200/60 dark:hover:bg-[var(--dark-border-color)] transition-colors disabled:opacity-50 disabled:cursor-wait"
                                                     disabled={currentLearnMoreState?.isLoading}
                                                     aria-expanded={!!currentLearnMoreState?.isOpen}
                                                 >
@@ -371,46 +369,45 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                                                 </button>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleAddToCalendar(activity); }}
-                                                    className="flex-shrink-0 p-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-gray-700/80 hover:bg-green-200/60 dark:hover:bg-gray-600/80 transition-colors"
+                                                    className="flex-shrink-0 p-2 rounded-md font-semibold text-[var(--color-primary)] dark:text-[var(--dark-color-primary)] bg-[var(--color-primary-light)] dark:bg-[var(--dark-bg-muted)] hover:bg-green-200/60 dark:hover:bg-[var(--dark-border-color)] transition-colors"
                                                     title="Add to Calendar"
                                                     aria-label={`Add ${activity.attractionName} to your calendar`}
                                                 >
                                                     <CalendarPlusIcon />
                                                 </button>
-
-                                                {currentLearnMoreState?.isOpen && (
-                                                    <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 text-sm space-y-2 animate-details-in">
-                                                        {currentLearnMoreState.isLoading ? (
-                                                            <div className="flex justify-center items-center py-4">
-                                                                <svg className="animate-spin h-6 w-6 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                                </svg>
-                                                            </div>
-                                                        ) : currentLearnMoreState.error ? (
-                                                            <p className="text-red-500">{currentLearnMoreState.error}</p>
-                                                        ) : currentLearnMoreState.data && (
-                                                            <>
-                                                                <p className="text-gray-700 dark:text-gray-300">{currentLearnMoreState.data.description}</p>
-                                                                {currentLearnMoreState.data.sources.length > 0 && (
-                                                                    <div className="pt-2">
-                                                                        <h5 className="font-semibold text-gray-800 dark:text-gray-200">Sources:</h5>
-                                                                        <ul className="list-disc list-inside space-y-1">
-                                                                            {currentLearnMoreState.data.sources.map((source, i) => (
-                                                                                <li key={i}>
-                                                                                    <a href={source.uri} target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">
-                                                                                        {source.title}
-                                                                                    </a>
-                                                                                </li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    </div>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                )}
                                             </div>
+                                            {currentLearnMoreState?.isOpen && (
+                                                <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 text-sm space-y-2 animate-details-in">
+                                                    {currentLearnMoreState.isLoading ? (
+                                                        <div className="flex justify-center items-center py-4">
+                                                            <svg className="animate-spin h-6 w-6 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    ) : currentLearnMoreState.error ? (
+                                                        <p className="text-red-500">{currentLearnMoreState.error}</p>
+                                                    ) : currentLearnMoreState.data && (
+                                                        <>
+                                                            <p className="text-gray-700 dark:text-gray-300">{currentLearnMoreState.data.description}</p>
+                                                            {currentLearnMoreState.data.sources.length > 0 && (
+                                                                <div className="pt-2">
+                                                                    <h5 className="font-semibold text-gray-800 dark:text-gray-200">Sources:</h5>
+                                                                    <ul className="list-disc list-inside space-y-1">
+                                                                        {currentLearnMoreState.data.sources.map((source, i) => (
+                                                                            <li key={i}>
+                                                                                <a href={source.uri} target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">
+                                                                                    {source.title}
+                                                                                </a>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </li>
@@ -442,11 +439,11 @@ const FlightBookingCard: React.FC<{ destination: string, startDate: string, endD
     };
 
     return (
-        <div className="p-6 my-8 rounded-xl bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white shadow-lg animate-scale-in">
+        <div className="p-6 my-8 rounded-xl bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] shadow-lg animate-scale-in">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-center md:text-left">
                     <h2 className="text-2xl font-bold">Ready to Go?</h2>
-                    <p className="text-lg opacity-90 mt-1">
+                    <p className="text-lg text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mt-1">
                         Find flights for your trip from {formatDate(startDate)} to {formatDate(endDate)}.
                     </p>
                 </div>
@@ -454,7 +451,7 @@ const FlightBookingCard: React.FC<{ destination: string, startDate: string, endD
                     href={flightSearchUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-shrink-0 flex items-center gap-2 px-6 py-3 bg-white text-[var(--color-primary)] font-bold rounded-full shadow-md hover:bg-gray-100 transition-transform transform hover:scale-105"
+                    className="flex-shrink-0 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white font-bold rounded-full shadow-md hover:opacity-90 transition-transform transform hover:scale-105"
                 >
                     <PlaneIcon />
                     <span>Search Flights</span>
@@ -674,7 +671,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                 <div className="mt-6 flex flex-wrap justify-center gap-4">
                     <button
                         onClick={handleSave}
-                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-muted)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
                         aria-label="Save itinerary"
                         disabled={isAlreadySaved || saveStatus === 'saved'}
                     >
@@ -683,7 +680,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                     </button>
                     <button
                         onClick={handleShare}
-                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
+                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-muted)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
                         aria-label="Share itinerary"
                         disabled={shareStatus === 'copied'}
                     >
@@ -692,7 +689,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                     </button>
                     <button
                         onClick={handleExportPdf}
-                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
+                        className="px-5 py-2.5 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-muted)] border border-[var(--color-primary)] text-[var(--color-primary)] font-semibold rounded-full hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)] transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait"
                         aria-label="Export itinerary as PDF"
                         disabled={isExporting}
                     >
@@ -754,8 +751,8 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                className="bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] p-4 rounded-lg flex items-start gap-3 transition-transform duration-200 hover:scale-105 hover:shadow-lg border border-transparent hover:border-[var(--border-color)] dark:hover:border-[var(--dark-border-color)] opacity-0 animate-fade-in"
                                style={{ animationDelay: `${index * 75}ms` }}
                             >
-                               <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center mt-0.5 shadow">
-                                    <svg className="h-5 w-5 text-[var(--color-primary-text)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                               <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-[var(--gradient-from)] to-[var(--gradient-to)] flex items-center justify-center mt-0.5 shadow">
+                                    <svg className="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                     </svg>
                                </div>
@@ -783,7 +780,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                <h4 id={`tip-header-${index}`}>
                                  <button
                                    type="button"
-                                   className="flex justify-between items-center w-full p-4 font-semibold text-left text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] bg-gray-100/50 dark:bg-slate-700 hover:bg-gray-200/60 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors"
+                                   className="flex justify-between items-center w-full p-4 font-semibold text-left text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] bg-[var(--bg-muted)]/50 dark:bg-[var(--dark-bg-muted)]/50 hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--color-primary)] transition-colors"
                                    onClick={() => handleTipToggle(index)}
                                    aria-expanded={isOpen}
                                    aria-controls={`tip-content-${index}`}
@@ -799,7 +796,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                   className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
                                >
                                  <div className="overflow-hidden">
-                                    <div className="p-4 border-t border-[var(--border-color)] dark:border-[var(--dark-border-color)] bg-[var(--bg-secondary)] dark:bg-slate-800 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] text-sm">
+                                    <div className="p-4 border-t border-[var(--border-color)] dark:border-[var(--dark-border-color)] bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] text-sm">
                                       {tip.explanation}
                                     </div>
                                  </div>
@@ -814,7 +811,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
 
             {/* User Feedback Section */}
             <div
-                className="bg-gradient-to-br from-green-50/50 via-teal-50/50 to-white dark:from-gray-900/80 dark:via-gray-900/50 dark:to-gray-900/20 p-8 sm:p-12 rounded-2xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in overflow-hidden relative"
+                className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 sm:p-12 rounded-2xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)] opacity-0 animate-scale-in overflow-hidden relative"
                 style={{ animationDelay: `${itinerary.dailyPlans.length * 100 + 300}ms` }}
             >
                 {isFeedbackSubmitted ? (
@@ -868,7 +865,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                             value={comment}
                                             onChange={(e) => setComment(e.target.value)}
                                             maxLength={500}
-                                            className="w-full px-4 py-3 bg-white/60 dark:bg-gray-800/60 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-inner focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200 placeholder-gray-400"
+                                            className="w-full px-4 py-3 bg-[var(--bg-muted)]/60 dark:bg-[var(--dark-bg-muted)]/60 border-2 border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-inner focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200 placeholder-gray-400"
                                             placeholder={rating < 3 ? "What could we improve for your next plan?" : "What did you like most about this itinerary?"}
                                         />
                                         <p className="absolute bottom-2 right-3 text-xs text-gray-400 dark:text-gray-500">

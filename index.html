@@ -13,6 +13,9 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kLmbG0CsdFSFYaCFliYSA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script type="importmap">
 {
   "imports": {
@@ -24,6 +27,9 @@
 }
 </script>
 <style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
     @keyframes fadeIn {
         from { 
             opacity: 0;
@@ -68,7 +74,7 @@
         to {
             opacity: 1;
             transform: translateY(0);
-            max-height: 10rem;
+            max-height: 25rem; /* Increased max-height */
         }
     }
     .animate-details-in {
@@ -248,6 +254,38 @@
     }
     .animate-progress-bar-indeterminate {
         animation: indeterminate-progress 2s ease-in-out infinite;
+    }
+    /* New Header Background Animation */
+    @keyframes move-background {
+        from {
+            transform: translate3d(0px, 0px, 0px);
+        }
+        to {
+            transform: translate3d(1000px, 1000px, 0px);
+        }
+    }
+    .header-background {
+        position: absolute;
+        width: 4000px;
+        height: 4000px;
+        top: -2000px;
+        left: -2000px;
+        z-index: 0;
+        background: radial-gradient(var(--dark-color-primary) 0.5px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.2;
+        animation: move-background 200s linear infinite;
+    }
+    
+    .glassmorphism {
+        background: rgba(22, 27, 34, 0.6);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(48, 54, 61, 0.5);
+    }
+    .light .glassmorphism {
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.5);
     }
 </style>
 </head>
