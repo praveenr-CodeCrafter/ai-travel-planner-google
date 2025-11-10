@@ -451,7 +451,7 @@ const FlightBookingCard: React.FC<{ destination: string, startDate: string, endD
                     href={flightSearchUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-shrink-0 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white font-bold rounded-full shadow-md hover:opacity-90 transition-transform transform hover:scale-105"
+                    className="flex-shrink-0 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white font-bold rounded-full shadow-md hover:opacity-90 transition-all duration-300 transform hover:-translate-y-px hover:shadow-xl"
                 >
                     <PlaneIcon />
                     <span>Search Flights</span>
@@ -879,7 +879,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                 <button
                                     type="submit"
                                     disabled={rating === 0}
-                                    className="w-full flex justify-center items-center gap-2 px-6 py-4 border border-transparent text-lg font-bold rounded-lg shadow-lg text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-in-out"
+                                    className="w-full flex justify-center items-center gap-2 px-6 py-4 border border-transparent text-lg font-bold rounded-lg shadow-lg text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-px hover:shadow-2xl transition-all duration-300 ease-in-out"
                                 >
                                     Submit Feedback
                                 </button>
