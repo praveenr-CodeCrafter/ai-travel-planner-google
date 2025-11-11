@@ -246,6 +246,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ id, value, onChange, minDate, r
             const isToday = currentTime === todayTime;
             const isSingleDaySelection = startDateTime === endDateTime;
             const isFocused = focusedDate.getTime() === currentTime;
+            const dayOfWeek = currentDate.getDay();
 
             let containerClasses = "flex items-center justify-center h-10";
             let dayClasses = "w-10 h-10 flex items-center justify-center text-sm transition-colors duration-150 ease-in-out rounded-full focus:outline-none";
@@ -254,22 +255,39 @@ const DatePicker: React.FC<DatePickerProps> = ({ id, value, onChange, minDate, r
                 dayClasses += " text-gray-300 dark:text-gray-600 cursor-not-allowed";
             } else {
                 dayClasses += " cursor-pointer";
-
+        
+                const dateIsPartOfRange = !isSingleDaySelection && (isInRange || isStartDate || isEndDate);
+                
+                // Set styles for the number button itself
                 if (isStartDate || isEndDate) {
-                    dayClasses += " bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold shadow-md";
-                    if (!isSingleDaySelection) {
-                        containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)]";
-                        if (isStartDate) containerClasses += " rounded-l-full";
-                        if (isEndDate) containerClasses += " rounded-r-full";
-                    }
+                    dayClasses += " bg-[var(--color-primary)] text-[var(--color-primary-text)] font-bold shadow-md z-10"; // z-10 to be on top of container bg
                 } else if (isInRange) {
-                    containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)]";
-                    dayClasses += " text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] rounded-none w-full hover:bg-green-200/60 dark:hover:bg-gray-600/50";
+                    dayClasses = dayClasses.replace('rounded-full', 'rounded-none w-full');
+                    dayClasses += " text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] hover:bg-[var(--color-primary)]/10 dark:hover:bg-[var(--dark-color-primary)]/10";
                 } else {
                     dayClasses += " text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700/50";
                     if (isToday) {
                         dayClasses += " ring-1 ring-inset ring-[var(--color-primary)]/70 dark:ring-[var(--dark-color-primary)]/70";
                     }
+                }
+                
+                // Set background and rounding for the container to create the range highlight effect
+                if (dateIsPartOfRange) {
+                    containerClasses += " bg-[var(--color-primary-light)] dark:bg-[var(--dark-color-primary-light)] relative"; // relative for z-index
+                    
+                    const isStartOfWeek = dayOfWeek === 0;
+                    const isEndOfWeek = dayOfWeek === 6;
+        
+                    let roundingClasses = "";
+                    // Round left if it's the start of the whole range OR a day in range at the start of a week
+                    if (isStartDate || (isInRange && isStartOfWeek)) {
+                        roundingClasses += " rounded-l-full";
+                    }
+                    // Round right if it's the end of the whole range OR a day in range at the end of a week
+                    if (isEndDate || (isInRange && isEndOfWeek)) {
+                        roundingClasses += " rounded-r-full";
+                    }
+                    containerClasses += roundingClasses;
                 }
             }
 
