@@ -345,7 +345,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ id, value, onChange, minDate, r
                     aria-modal="true"
                     aria-labelledby="calendar-heading"
                     onKeyDown={handleKeyDown}
-                    className="absolute z-20 mt-2 w-72 bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-xl shadow-2xl p-4 animate-calendar-in"
+                    className="absolute z-20 mt-2 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-xl shadow-2xl p-4 animate-calendar-in"
                 >
                     <div className="flex justify-between items-center mb-4">
                         <button type="button" onClick={() => handleMonthChange(-1)} aria-label="Previous month" className="p-2.5 rounded-full hover:bg-[var(--bg-muted)] dark:hover:bg-gray-700 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] transition-colors"><ChevronLeftIcon /></button>
