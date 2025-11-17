@@ -124,14 +124,15 @@ const PlaneIcon = () => (
 );
 
 const SparklesIcon = () => (
-    <svg className="h-16 w-16 text-[var(--color-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-16 w-16">
         <defs>
-            <linearGradient id="sparkleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: 'var(--gradient-from)', stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: 'var(--gradient-to)', stopOpacity: 1 }} />
+            <linearGradient id="sparkle-gradient-feedback" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="var(--gradient-from)" />
+                <stop offset="100%" stopColor="var(--gradient-to)" />
             </linearGradient>
         </defs>
-        <path stroke="url(#sparkleGradient)" strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.455-2.456L12.75 18l1.178-.398a3.375 3.375 0 002.455-2.456L16.5 14.25l.398 1.178a3.375 3.375 0 002.456 2.456L20.25 18l-1.178.398a3.375 3.375 0 00-2.456 2.456z" />
+        <path d="M32 5.33301L37.816 26.183L58.6666 31.9997L37.816 37.8163L32 58.6663L26.184 37.8163L5.33333 31.9997L26.184 26.183L32 5.33301Z" fill="url(#sparkle-gradient-feedback)" fillOpacity="0.9" />
+        <path d="M51.3333 22.6667L53.6 15.4L61 13.3333L53.6 11.2667L51.3333 4L49.0667 11.2667L41.6667 13.3333L49.0667 15.4L51.3333 22.6667Z" fill="url(#sparkle-gradient-feedback)" />
     </svg>
 );
 
@@ -482,7 +483,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
     const pdfContentRef = useRef<HTMLDivElement>(null);
 
     const ratingLabels: { [key: number]: string } = {
-        0: "How was this plan?",
+        0: "Amazing!",
         1: "Could be better",
         2: "It was okay",
         3: "Good",
@@ -852,33 +853,31 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                                 </div>
                             </div>
                            
-                            {rating > 0 && (
-                                <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-                                    <label htmlFor="feedback-comment" className="sr-only">
-                                        Any suggestions? (optional)
-                                    </label>
-                                    <div className="relative">
-                                        <textarea
-                                            id="feedback-comment"
-                                            name="comment"
-                                            rows={4}
-                                            value={comment}
-                                            onChange={(e) => setComment(e.target.value)}
-                                            maxLength={500}
-                                            className="w-full px-4 py-3 bg-[var(--bg-muted)]/60 dark:bg-[var(--dark-bg-muted)]/60 border-2 border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-inner focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200 placeholder-gray-400"
-                                            placeholder={rating < 3 ? "What could we improve for your next plan?" : "What did you like most about this itinerary?"}
-                                        />
-                                        <p className="absolute bottom-2 right-3 text-xs text-gray-400 dark:text-gray-500">
-                                            {comment.length} / 500
-                                        </p>
-                                    </div>
+                            <div>
+                                <label htmlFor="feedback-comment" className="sr-only">
+                                    What did you like most about this itinerary?
+                                </label>
+                                <div className="relative">
+                                    <textarea
+                                        id="feedback-comment"
+                                        name="comment"
+                                        rows={4}
+                                        value={comment}
+                                        onChange={(e) => setComment(e.target.value)}
+                                        maxLength={500}
+                                        className="w-full px-4 py-3 bg-[var(--bg-muted)]/60 dark:bg-[var(--dark-bg-muted)]/60 border-2 border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-inner focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200 placeholder-gray-400"
+                                        placeholder="What did you like most about this itinerary?"
+                                    />
+                                    <p className="absolute bottom-2 right-3 text-xs text-gray-400 dark:text-gray-500">
+                                        {comment.length} / 500
+                                    </p>
                                 </div>
-                            )}
+                            </div>
 
                             <div className="pt-2">
                                 <button
                                     type="submit"
-                                    disabled={rating === 0}
+                                    disabled={rating === 0 && comment.trim() === ''}
                                     className="w-full flex justify-center items-center gap-2 px-6 py-4 border border-transparent text-lg font-bold rounded-lg shadow-lg text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-px hover:shadow-2xl transition-all duration-300 ease-in-out"
                                 >
                                     Submit Feedback
