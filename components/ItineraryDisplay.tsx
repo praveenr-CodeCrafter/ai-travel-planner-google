@@ -41,7 +41,7 @@ const TipsIcon = () => (
 );
 
 const AnimatedCheckCircleIcon = () => (
-    <svg className="h-20 w-20 text-[var(--color-primary)] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+    <svg className="h-20 w-20 text-[var(--color-primary)] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <circle cx="12" cy="12" r="11" stroke="currentColor" strokeOpacity="0.2" />
         <circle cx="12" cy="12" r="11" className="animate-draw-circle" transform="rotate(-90 12 12)" />
         <path className="animate-draw-check" strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15L15 9.75" />
@@ -201,9 +201,19 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
             if (period.toUpperCase() === 'AM' && hours === 12) hours = 0; // Midnight case
             activityDate.setHours(hours, minutes, 0, 0);
 
-            const durationMatch = activity.estimatedDuration?.match(/(\d+(\.\d+)?)/);
-            const durationHours = durationMatch ? parseFloat(durationMatch[1]) : 1;
-            const endDate = new Date(activityDate.getTime() + durationHours * 60 * 60 * 1000);
+            let durationMinutes = 60; // Default 1 hour
+            if (activity.estimatedDuration) {
+                const hoursMatch = activity.estimatedDuration.match(/(\d+(\.\d+)?)\s*(h|hr|hour)/i);
+                const minsMatch = activity.estimatedDuration.match(/(\d+)\s*(m|min|minute)/i);
+                
+                if (hoursMatch) {
+                    durationMinutes = parseFloat(hoursMatch[1]) * 60;
+                } else if (minsMatch) {
+                    durationMinutes = parseInt(minsMatch[1], 10);
+                }
+            }
+            
+            const endDate = new Date(activityDate.getTime() + durationMinutes * 60 * 1000);
 
             // 2. Format dates for .ics (YYYYMMDDTHHMMSS)
             const formatIcsDate = (date: Date) => {
@@ -221,6 +231,18 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
             const dtstamp = formatIcsDate(new Date());
 
             // 3. Create .ics content
+            let description = activity.description || '';
+            if (activity.bookingInfo) {
+                description += `\n\nBooking: ${activity.bookingInfo.text}`;
+                if (activity.bookingInfo.url) description += `\nURL: ${activity.bookingInfo.url}`;
+            }
+            if (activity.userReviewsSummary && activity.userReviewsSummary !== 'N/A') {
+                description += `\n\nReviews: ${activity.userReviewsSummary}`;
+            }
+             if (activity.averageCost && activity.averageCost !== 'N/A') {
+                description += `\n\nCost: ${activity.averageCost}`;
+            }
+
             const icsContent = [
                 'BEGIN:VCALENDAR',
                 'VERSION:2.0',
@@ -231,7 +253,7 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                 `DTSTART:${dtstart}`,
                 `DTEND:${dtend}`,
                 `SUMMARY:${activity.attractionName}`,
-                `DESCRIPTION:${activity.description.replace(/,/g, '\\,').replace(/\n/g, '\\n')}`,
+                `DESCRIPTION:${description.replace(/,/g, '\\,').replace(/\n/g, '\\n')}`,
                 `LOCATION:${activity.attractionName}, ${destination}`,
                 'END:VEVENT',
                 'END:VCALENDAR'
