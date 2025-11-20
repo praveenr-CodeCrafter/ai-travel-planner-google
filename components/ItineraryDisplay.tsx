@@ -190,32 +190,44 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
             const activityDate = new Date(tripStartDate);
             activityDate.setDate(tripStartDate.getDate() + plan.day - 1);
 
-            const timeParts = activity.time.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            // Handle time formats: "09:00 AM", "9:00 AM", "9 AM", "14:00"
+            const timeParts = activity.time.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
             if (!timeParts) throw new Error('Invalid time format');
             
             let [, hoursStr, minutesStr, period] = timeParts;
             let hours = parseInt(hoursStr, 10);
-            const minutes = parseInt(minutesStr, 10);
+            const minutes = minutesStr ? parseInt(minutesStr, 10) : 0;
 
-            if (period.toUpperCase() === 'PM' && hours < 12) hours += 12;
-            if (period.toUpperCase() === 'AM' && hours === 12) hours = 0; // Midnight case
+            if (period) {
+                if (period.toUpperCase() === 'PM' && hours < 12) hours += 12;
+                if (period.toUpperCase() === 'AM' && hours === 12) hours = 0;
+            }
+
             activityDate.setHours(hours, minutes, 0, 0);
 
-            let durationMinutes = 60; // Default 1 hour
+            // Calculate duration with improved parsing for mixed units
+            let durationMinutes = 0;
             if (activity.estimatedDuration) {
                 const hoursMatch = activity.estimatedDuration.match(/(\d+(\.\d+)?)\s*(h|hr|hour)/i);
                 const minsMatch = activity.estimatedDuration.match(/(\d+)\s*(m|min|minute)/i);
                 
                 if (hoursMatch) {
-                    durationMinutes = parseFloat(hoursMatch[1]) * 60;
-                } else if (minsMatch) {
-                    durationMinutes = parseInt(minsMatch[1], 10);
+                    durationMinutes += parseFloat(hoursMatch[1]) * 60;
+                }
+                if (minsMatch) {
+                     // Use regex match index to prevent double counting if necessary, 
+                     // but typically "1 hour" and "30 mins" are distinct or "1.5 hours" is one unit.
+                     // If both exist like "1 hour 30 mins", this sums them correctly.
+                     // If "1.5 hours" exists, minutes regex shouldn't match "hours".
+                     durationMinutes += parseInt(minsMatch[1], 10);
                 }
             }
             
+            if (durationMinutes === 0) durationMinutes = 60; // Default 1 hour
+            
             const endDate = new Date(activityDate.getTime() + durationMinutes * 60 * 1000);
 
-            // 2. Format dates for .ics (YYYYMMDDTHHMMSS)
+            // 2. Format dates for .ics (YYYYMMDDTHHMMSS) - using floating time for portability
             const formatIcsDate = (date: Date) => {
                 const pad = (num: number) => num.toString().padStart(2, '0');
                 const year = date.getFullYear();
@@ -231,6 +243,9 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
             const dtstamp = formatIcsDate(new Date());
 
             // 3. Create .ics content
+            // Escaping special characters per RFC 5545
+            const escapeText = (text: string) => text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+
             let description = activity.description || '';
             if (activity.bookingInfo) {
                 description += `\n\nBooking: ${activity.bookingInfo.text}`;
@@ -252,9 +267,9 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
                 `DTSTAMP:${dtstamp}`,
                 `DTSTART:${dtstart}`,
                 `DTEND:${dtend}`,
-                `SUMMARY:${activity.attractionName}`,
-                `DESCRIPTION:${description.replace(/,/g, '\\,').replace(/\n/g, '\\n')}`,
-                `LOCATION:${activity.attractionName}, ${destination}`,
+                `SUMMARY:${escapeText(activity.attractionName)}`,
+                `DESCRIPTION:${escapeText(description)}`,
+                `LOCATION:${escapeText(activity.attractionName + ', ' + destination)}`,
                 'END:VEVENT',
                 'END:VCALENDAR'
             ].join('\r\n');
@@ -269,6 +284,8 @@ const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ plan, destination, 
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            
+            onShowToast("Event downloaded!", 'success');
 
         } catch (error) {
             console.error("Failed to generate .ics file:", error);
