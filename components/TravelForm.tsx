@@ -503,7 +503,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
 
         const budgetValue = parseFloat(preferences.budget);
         if (isNaN(budgetValue) || budgetValue < 100) {
-            onShowToast(`Budget must be a valid number of at least ${selectedCurrency?.symbol ?? ''}100.`, 'error');
+            onShowToast(`Budget must be a valid number of at least ${selectedCurrency?.symbol ?? '$'}100.`, 'error');
             return;
         }
         
