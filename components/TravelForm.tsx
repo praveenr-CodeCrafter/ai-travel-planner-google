@@ -371,233 +371,193 @@ const DatePicker: React.FC<DatePickerProps> = ({ id, value, onChange, minDate, r
 
 const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowToast }) => {
     const today = new Date().toISOString().split('T')[0];
+    const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    const [isValidating, setIsValidating] = useState(false);
-    const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
-
     const [preferences, setPreferences] = useState<TravelPreferences>({
         destination: '',
         budget: '2000',
         currency: 'USD',
         startDate: today,
-        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        interests: ['Sightseeing'],
+        endDate: nextWeek,
+        interests: []
     });
-    
+
     const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const destinationRef = useRef<HTMLDivElement>(null);
-    const debounceTimeoutRef = useRef<number | null>(null);
+    const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+    const suggestionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const suggestionsRef = useRef<HTMLUListElement>(null);
 
-    const [isOtherInterestSelected, setIsOtherInterestSelected] = useState(false);
-    const [otherInterest, setOtherInterest] = useState('');
-    
+    // Close suggestions on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (destinationRef.current && !destinationRef.current.contains(event.target as Node)) {
+            if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
                 setShowSuggestions(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const handleDestinationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setPreferences({ ...preferences, destination: value });
-    
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-    
-        if (value.length < 3) {
-            setDestinationSuggestions([]);
-            setShowSuggestions(false);
-            return;
-        }
-    
-        setShowSuggestions(true);
-        setIsFetchingSuggestions(true);
-    
-        debounceTimeoutRef.current = window.setTimeout(async () => {
-            try {
+
+        if (value.length >= 3) {
+            setIsFetchingSuggestions(true);
+            if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current);
+            suggestionTimeoutRef.current = setTimeout(async () => {
                 const suggestions = await getPlaceSuggestions(value);
                 setDestinationSuggestions(suggestions);
-            } catch (error) {
-                console.error("Failed to fetch suggestions:", error);
-                setDestinationSuggestions([]);
-            } finally {
                 setIsFetchingSuggestions(false);
-            }
-        }, 300); // 300ms debounce delay
-    };
-    
-    const handleSuggestionClick = (suggestion: string) => {
-        setPreferences(prev => ({ ...prev, destination: suggestion }));
-        setShowSuggestions(false);
-        setDestinationSuggestions([]);
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setPreferences({ ...preferences, [e.target.name]: e.target.value });
-    };
-
-    const handleStartDateChange = (date: string) => {
-        const newStartDate = new Date(date + 'T00:00:00');
-        const currentEndDate = new Date(preferences.endDate + 'T00:00:00');
-        if (newStartDate > currentEndDate) {
-            setPreferences(prev => ({ ...prev, startDate: date, endDate: date }));
+                setShowSuggestions(true);
+            }, 500);
         } else {
-            setPreferences(prev => ({ ...prev, startDate: date }));
+            setDestinationSuggestions([]);
+            setShowSuggestions(false);
         }
     };
 
-    const handleInterestChange = (interest: string) => {
-        const newInterests = preferences.interests.includes(interest)
-            ? preferences.interests.filter((i) => i !== interest)
-            : [...preferences.interests, interest];
-        setPreferences({ ...preferences, interests: newInterests });
+    const handleSuggestionClick = (suggestion: string) => {
+        setPreferences({ ...preferences, destination: suggestion });
+        setShowSuggestions(false);
     };
 
-    const handleOtherInterestClick = () => {
-        const nextState = !isOtherInterestSelected;
-        setIsOtherInterestSelected(nextState);
-
-        // If we are deselecting 'Other'
-        if (!nextState) {
-            // Remove the custom interest from the list
-            setPreferences(prev => ({
-                ...prev,
-                interests: prev.interests.filter(i => i !== otherInterest)
-            }));
-            setOtherInterest(''); // Clear the input value
-        }
-    };
-
-    const handleOtherInterestChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newCustomValue = e.target.value;
-        const oldCustomValue = otherInterest; // Capture old value before state update
-
+    const handleInterestToggle = (interest: string) => {
         setPreferences(prev => {
-            const interestsWithoutOld = prev.interests.filter(i => i !== oldCustomValue);
-            const newInterests = newCustomValue.trim()
-                ? [...interestsWithoutOld, newCustomValue.trim()]
-                : interestsWithoutOld;
-            return { ...prev, interests: newInterests };
+            const current = prev.interests;
+            if (current.includes(interest)) {
+                return { ...prev, interests: current.filter(i => i !== interest) };
+            } else {
+                return { ...prev, interests: [...current, interest] };
+            }
         });
-        
-        setOtherInterest(newCustomValue); // Update the state for the input field
     };
-
-    const selectedCurrency = CURRENCY_OPTIONS.find(c => c.code === preferences.currency);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setShowSuggestions(false);
+        
+        // Client-side validation
         if (!preferences.destination.trim()) {
-            onShowToast("Please enter a destination.", 'error');
+            onShowToast("Please enter a destination.", "error");
             return;
         }
 
         const budgetValue = parseFloat(preferences.budget);
         if (isNaN(budgetValue) || budgetValue < 100) {
-            onShowToast(`Budget must be a valid number of at least ${selectedCurrency?.symbol ?? '$'}100.`, 'error');
-            return;
-        }
-        
-        const finalInterests = preferences.interests.filter(i => i.trim() !== '');
-        if (finalInterests.length === 0) {
-            onShowToast("Please select at least one interest.", 'error');
+            onShowToast("Budget must be at least 100.", "error");
             return;
         }
 
-        setIsValidating(true);
-        try {
-            const isDestinationValid = await validateDestination(preferences.destination);
-            if (!isDestinationValid) {
-                onShowToast("Please enter a valid travel destination (e.g., a city, region, or country).", 'error');
-                return;
-            }
-        } catch (error) {
-            // Log error but proceed (fail-open)
-            console.error("Destination validation failed:", error);
-        } finally {
-            setIsValidating(false);
+        if (preferences.interests.length === 0) {
+            onShowToast("Please select at least one interest.", "error");
+            return;
         }
 
-        onGenerate({...preferences, interests: finalInterests});
+        if (new Date(preferences.endDate) < new Date(preferences.startDate)) {
+            onShowToast("End date cannot be before start date.", "error");
+            return;
+        }
+
+        onGenerate(preferences);
     };
 
     return (
-        <div className="bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] p-8 rounded-xl shadow-lg border border-[var(--border-color)] dark:border-[var(--dark-border-color)]">
-            <h2 className="text-2xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-6">Plan Your Next Trip</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Destination and Budget */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="relative" ref={destinationRef}>
-                        <label htmlFor="destination" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Destination</label>
-                        <input type="text" name="destination" id="destination" value={preferences.destination} onChange={handleDestinationChange} autoComplete="off"
-                               className="w-full px-4 py-2 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
-                               placeholder="e.g., Paris, France" />
-                        {showSuggestions && (
-                            <ul className="absolute z-10 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
-                                {isFetchingSuggestions ? (
-                                    <li className="px-4 py-2 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] italic">Searching for places...</li>
-                                ) : destinationSuggestions.length > 0 ? (
-                                    destinationSuggestions.map((suggestion) => (
-                                        <li
-                                            key={suggestion}
-                                            className="px-4 py-2 text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] cursor-pointer hover:bg-[var(--color-primary-light)] dark:hover:bg-[var(--dark-color-primary-light)]"
-                                            onMouseDown={() => handleSuggestionClick(suggestion)}
-                                        >
-                                            {suggestion}
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li className="px-4 py-2 text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">No matching places found.</li>
-                                )}
+        <div className="max-w-4xl mx-auto bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] rounded-2xl shadow-xl p-6 md:p-10 mb-8 border border-[var(--border-color)] dark:border-[var(--dark-border-color)] animate-fade-in relative overflow-visible">
+            <h2 className="text-3xl font-bold text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] mb-8 text-center">Plan Your Dream Trip</h2>
+            <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Destination Input */}
+                    <div className="relative">
+                        <label htmlFor="destination" className="block text-sm font-semibold text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">Destination</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                id="destination"
+                                value={preferences.destination}
+                                onChange={handleDestinationChange}
+                                placeholder="e.g., Kyoto, Paris, Cape Town"
+                                className="w-full px-4 py-3 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200"
+                                required
+                            />
+                             {isFetchingSuggestions && (
+                                <div className="absolute right-3 top-3">
+                                    <svg className="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            )}
+                        </div>
+                        {showSuggestions && destinationSuggestions.length > 0 && (
+                            <ul ref={suggestionsRef} className="absolute z-50 w-full bg-[var(--bg-secondary)] dark:bg-[var(--dark-bg-secondary)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] mt-1 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-scale-in">
+                                {destinationSuggestions.map((suggestion, index) => (
+                                    <li
+                                        key={index}
+                                        onClick={() => handleSuggestionClick(suggestion)}
+                                        className="px-4 py-3 hover:bg-[var(--bg-muted)] dark:hover:bg-[var(--dark-bg-muted)] cursor-pointer text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0"
+                                    >
+                                        {suggestion}
+                                    </li>
+                                ))}
                             </ul>
                         )}
                     </div>
-                    <div>
-                        <label htmlFor="budget" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Budget</label>
-                        <div className="flex items-center gap-2">
-                             <div className="relative flex-grow">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span className="text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)]">{selectedCurrency?.symbol ?? '$'}</span>
-                                </div>
-                                <input type="number" name="budget" id="budget" value={preferences.budget} onChange={handleChange} min="100" step="100"
-                                    className="w-full py-2 pl-10 pr-4 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
-                                    placeholder="e.g., 2000" />
-                            </div>
-                            <select name="currency" value={preferences.currency} onChange={handleChange} className="px-4 py-2 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]">
-                                {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
-                            </select>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Dates */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Budget & Currency */}
+                    <div className="grid grid-cols-3 gap-2">
+                         <div className="col-span-2">
+                            <label htmlFor="budget" className="block text-sm font-semibold text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">Budget</label>
+                            <div className="relative rounded-md shadow-sm">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span className="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <input
+                                    type="number"
+                                    id="budget"
+                                    min="0"
+                                    value={preferences.budget}
+                                    onChange={(e) => setPreferences({ ...preferences, budget: e.target.value })}
+                                    className="w-full pl-7 pr-4 py-3 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200"
+                                    required
+                                />
+                            </div>
+                         </div>
+                         <div className="col-span-1">
+                             <label htmlFor="currency" className="block text-sm font-semibold text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">Currency</label>
+                             <select
+                                id="currency"
+                                value={preferences.currency}
+                                onChange={(e) => setPreferences({ ...preferences, currency: e.target.value })}
+                                className="w-full px-3 py-3 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg shadow-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)] transition-all duration-200 appearance-none"
+                            >
+                                {CURRENCY_OPTIONS.map(opt => (
+                                    <option key={opt.code} value={opt.code}>{opt.code}</option>
+                                ))}
+                            </select>
+                         </div>
+                    </div>
+
+                    {/* Start Date */}
                     <div>
-                        <label htmlFor="startDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">Start Date</label>
-                        <DatePicker
+                        <label htmlFor="startDate" className="block text-sm font-semibold text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">Start Date</label>
+                        <DatePicker 
                             id="startDate"
                             value={preferences.startDate}
-                            onChange={handleStartDateChange}
+                            onChange={(date) => setPreferences({ ...preferences, startDate: date })}
                             minDate={today}
                             rangeStart={preferences.startDate}
                             rangeEnd={preferences.endDate}
                         />
                     </div>
-                     <div>
-                        <label htmlFor="endDate" className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-1">End Date</label>
-                        <DatePicker
+
+                    {/* End Date */}
+                    <div>
+                        <label htmlFor="endDate" className="block text-sm font-semibold text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">End Date</label>
+                         <DatePicker 
                             id="endDate"
                             value={preferences.endDate}
-                            onChange={(date) => setPreferences(prev => ({...prev, endDate: date}))}
+                            onChange={(date) => setPreferences({ ...preferences, endDate: date })}
                             minDate={preferences.startDate}
                             rangeStart={preferences.startDate}
                             rangeEnd={preferences.endDate}
@@ -607,61 +567,48 @@ const TravelForm: React.FC<TravelFormProps> = ({ onGenerate, isLoading, onShowTo
 
                 {/* Interests */}
                 <div>
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-2">Interests</label>
+                    <label className="block text-sm font-semibold text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] mb-4">Interests (Select at least one)</label>
                     <div className="flex flex-wrap gap-3">
                         {INTERESTS_OPTIONS.map((interest) => {
-                             const isSelected = preferences.interests.includes(interest);
-                             const Icon = INTEREST_ICONS[interest];
-                             return (
-                                <button key={interest} type="button" onClick={() => handleInterestChange(interest)}
-                                    className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-1 hover:shadow-lg ${
+                            const Icon = INTEREST_ICONS[interest];
+                            const isSelected = preferences.interests.includes(interest);
+                            return (
+                                <button
+                                    key={interest}
+                                    type="button"
+                                    onClick={() => handleInterestToggle(interest)}
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-sm border ${
                                         isSelected
-                                            ? 'bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white shadow-md'
-                                            : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)]'
-                                    }`}>
+                                            ? 'bg-[var(--color-primary)] text-[var(--color-primary-text)] border-[var(--color-primary)] shadow-md ring-2 ring-offset-2 ring-offset-[var(--bg-secondary)] dark:ring-offset-[var(--dark-bg-secondary)] ring-[var(--color-primary)]'
+                                            : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-secondary)] dark:text-[var(--dark-text-secondary)] border-[var(--border-color)] dark:border-[var(--dark-border-color)] hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    }`}
+                                >
                                     {Icon && <Icon />}
                                     {interest}
                                 </button>
-                             );
+                            );
                         })}
-                        <button type="button" onClick={handleOtherInterestClick}
-                                className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-1 hover:shadow-lg ${
-                                    isOtherInterestSelected
-                                        ? 'bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white shadow-md'
-                                        : 'bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] text-[var(--text-inverted)] dark:text-[var(--dark-text-inverted)]'
-                                }`}>
-                            Other
-                        </button>
                     </div>
-                     {isOtherInterestSelected && (
-                        <div className="mt-4">
-                            <label htmlFor="otherInterest" className="sr-only">Other interest</label>
-                            <input
-                                id="otherInterest"
-                                type="text"
-                                value={otherInterest}
-                                onChange={handleOtherInterestChange}
-                                className="w-full md:w-2/3 px-4 py-2 bg-[var(--bg-muted)] dark:bg-[var(--dark-bg-muted)] border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-[var(--text-primary)] dark:text-[var(--dark-text-primary)]"
-                                placeholder="Type your custom interest..."
-                                aria-label="Custom interest input"
-                            />
-                        </div>
-                    )}
                 </div>
-                
-                {/* Action Buttons */}
-                <div className="pt-2">
-                    <button type="submit" disabled={isLoading || isValidating}
-                            className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transform hover:-translate-y-px hover:shadow-lg transition-all duration-300">
-                        {isLoading || isValidating ? (
-                           <>
-                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            {isLoading ? 'Generating...' : 'Validating...'}
-                           </>
-                        ) : 'Generate Itinerary'}
+
+                {/* Submit Button */}
+                <div className="flex justify-center pt-4">
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full md:w-auto px-10 py-4 bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-2xl hover:opacity-95 transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        {isLoading ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Planning your trip...
+                            </>
+                        ) : (
+                            'Generate My Itinerary'
+                        )}
                     </button>
                 </div>
             </form>

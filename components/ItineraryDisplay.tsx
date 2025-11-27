@@ -816,7 +816,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, selected
                         {itinerary.travelTips.map((tip, index) => {
                            const isOpen = openTipIndex === index;
                            return (
-                             <div key={index} className="border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg overflow-hidden transition-shadow duration-200 hover:shadow-md animate-fade-in" style={{animationDelay: `${index * 75}ms`, opacity: 0}}>
+                             <div key={index} className="border border-[var(--border-color)] dark:border-[var(--dark-border-color)] rounded-lg overflow-hidden transition-shadow duration-200 hover:shadow-md animate-tip-fade-in" style={{animationDelay: `${index * 75}ms`, opacity: 0}}>
                                <h4 id={`tip-header-${index}`}>
                                  <button
                                    type="button"
